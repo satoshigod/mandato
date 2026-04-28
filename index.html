@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F6E56">
+<title>Mandato — Dinos qué necesitas. Te traemos las opciones.</title>
+<meta name="description" content="Plataforma de finca raíz al revés en Medellín. Publica qué inmueble buscas y recibe ofertas de brokers verificados, incluyendo opciones off-market.">
+<meta property="og:title" content="Mandato — Tú dices qué buscas">
+<meta property="og:description" content="Inversionistas y compradores publican qué necesitan. Brokers afiliados traen las opciones.">
+<meta property="og:type" content="website">
+<style>
+  /* ===== Reset ===== */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body { margin: 0; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  textarea { font: inherit; }
+  a { color: inherit; }
+
+  /* ===== Variables ===== */
+  :root {
+    --brand: #0F6E56;
+    --brand-hover: #0C5A47;
+    --brand-light: #E1F5EE;
+    --brand-text: #04342C;
+    --bg: #FAFAF7;
+    --surface: #FFFFFF;
+    --surface-alt: #F4F2EC;
+    --text: #1A1A18;
+    --text-muted: #5F5E5A;
+    --text-faint: #888780;
+    --border: rgba(0, 0, 0, 0.1);
+    --border-strong: rgba(0, 0, 0, 0.18);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-pill: 999px;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+    --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --max-width: 760px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --brand: #5DCAA5;
+      --brand-hover: #7FD9BC;
+      --brand-light: rgba(29, 158, 117, 0.18);
+      --brand-text: #9FE1CB;
+      --bg: #18181A;
+      --surface: #1F1F22;
+      --surface-alt: #15151A;
+      --text: #F2F1ED;
+      --text-muted: #A8A8A4;
+      --text-faint: #6E6E6A;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
+    }
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ===== Layout helpers ===== */
+  .wrap { max-width: var(--max-width); margin: 0 auto; padding: 0 16px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+  /* ===== Navbar ===== */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(250, 250, 247, 0.92);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 0.5px solid var(--border);
+  }
+  @media (prefers-color-scheme: dark) {
+    .nav { background: rgba(24, 24, 26, 0.85); }
+  }
+  .nav-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .brand-icon { color: var(--brand); }
+  .brand-name { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); }
+  .nav-links { display: none; gap: 22px; align-items: center; }
+  .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 14px; transition: color 0.15s; }
+  .nav-links a:hover { color: var(--text); }
+  @media (min-width: 720px) {
+    .nav-links { display: flex; }
+  }
+
+  /* ===== Buttons ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    border: 0.5px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    transition: all 0.15s;
+    text-decoration: none;
+    min-height: 40px;
+  }
+  .btn:hover { background: var(--surface-alt); }
+  .btn-primary {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: white;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; min-height: 34px; }
+  .btn-block { width: 100%; }
+  @media (min-width: 720px) {
+    .btn-block { width: auto; }
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    padding: 32px 0 24px;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    color: var(--brand);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    margin: 0 0 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .hero-lead {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0 0 24px;
+    max-width: 580px;
+  }
+  @media (min-width: 720px) {
+    .hero { padding: 56px 0 32px; }
+    .hero h1 { font-size: 40px; line-height: 1.1; }
+    .hero-lead { font-size: 17px; }
+  }
+
+  /* ===== Composer ===== */
+  .composer {
+    background: var(--surface);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .composer:focus-within {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-light);
+  }
+  .composer textarea {
+    width: 100%;
+    min-height: 96px;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--text);
+    outline: none;
+    padding: 0;
+  }
+  .composer textarea::placeholder { color: var(--text-faint); }
+  .composer-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 0.5px solid var(--border);
+    font-size: 11px;
+    color: var(--text-faint);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ===== Necesito block ===== */
+  .necesito {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 16px 6px;
+    margin-bottom: 12px;
+  }
+  .necesito-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 0.5px solid var(--border);
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .necesito-title { font-size: 15px; font-weight: 600; }
+  .necesito-sub { font-size: 11px; color: var(--text-faint); }
+  .row {
+    padding: 12px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .row:last-child { border-bottom: none; }
+  .row-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  @media (min-width: 640px) {
+    .necesito { padding: 22px 22px 8px; }
+    .row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .row-label { padding-top: 7px; margin-bottom: 0; }
+  }
+
+  /* ===== Chips ===== */
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    border: 0.5px solid var(--border-strong);
+    background: var(--surface);
+    padding: 8px 13px;
+    border-radius: var(--radius-pill);
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--text);
+    transition: all 0.12s;
+    line-height: 1.2;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .chip:hover { border-color: var(--text-muted); }
+  .chip.selected {
+    background: var(--brand-light);
+    border-color: var(--brand);
+    color: var(--brand-text);
+    font-weight: 500;
+  }
+  .chip:active { transform: scale(0.97); }
+
+  /* ===== More toggle ===== */
+  .more-toggle {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 13px 16px;
+    margin-bottom: 12px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    text-align: left;
+    transition: background 0.12s;
+  }
+  .more-toggle:hover { background: var(--surface-alt); }
+  .more-toggle-text { font-size: 13px; color: var(--text-muted); }
+  .more-toggle-arrow {
+    color: var(--text-faint);
+    font-size: 11px;
+    transition: transform 0.2s;
+    margin-left: 8px;
+  }
+  .more-toggle.open .more-toggle-arrow { transform: rotate(180deg); }
+  .more-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .more-content.open { max-height: 1200px; }
+  .more-inner {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px 6px;
+    margin-bottom: 12px;
+  }
+  @media (min-width: 640px) {
+    .more-inner { padding: 18px 22px 8px; }
+  }
+
+  /* ===== Publish bar ===== */
+  .publish-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 32px;
+  }
+  .publish-note {
+    font-size: 12px;
+    color: var(--text-faint);
+    line-height: 1.55;
+  }
+  @media (min-width: 720px) {
+    .publish-bar {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+    }
+    .publish-note { max-width: 380px; }
+  }
+
+  /* ===== Sections ===== */
+  .section {
+    padding: 40px 0;
+  }
+  .section.alt {
+    background: var(--surface);
+    border-top: 0.5px solid var(--border);
+    border-bottom: 0.5px solid var(--border);
+  }
+  .section h2 {
+    font-size: 22px;
+    margin: 0 0 8px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .section-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 24px;
+  }
+  @media (min-width: 720px) {
+    .section { padding: 64px 0; }
+    .section h2 { font-size: 26px; }
+  }
+
+  /* ===== Live feed ===== */
+  .live-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .live-card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    transition: border-color 0.15s;
+  }
+  .live-card:hover { border-color: var(--border-strong); }
+  .live-text {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .live-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .live-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .live-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .live-tag.hot {
+    background: var(--brand-light);
+    color: var(--brand-text);
+  }
+  .live-time { font-size: 11px; color: var(--text-faint); }
+
+  /* ===== How it works ===== */
+  .how-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .how-card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 18px;
+  }
+  .how-num {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--brand);
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .how-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .how-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+  @media (min-width: 720px) {
+    .how-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  }
+
+  /* ===== Final CTA ===== */
+  .final-cta {
+    text-align: center;
+    padding: 48px 0 64px;
+  }
+  .final-cta h2 {
+    font-size: 24px;
+    margin: 0 0 10px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .final-cta p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 22px;
+  }
+  @media (min-width: 720px) {
+    .final-cta h2 { font-size: 30px; }
+  }
+
+  /* ===== Footer ===== */
+  footer {
+    padding: 24px 0;
+    background: var(--surface-alt);
+    border-top: 0.5px solid var(--border);
+  }
+  .foot-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .foot-text { font-size: 12px; color: var(--text-faint); }
+  .foot-links { display: flex; gap: 16px; }
+  .foot-links a {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.12s;
+  }
+  .foot-links a:hover { color: var(--text); }
+
+  /* ===== Live indicator ===== */
+  .live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--brand);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="#" class="brand" aria-label="Mandato inicio">
+      <svg class="brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 21V8l9-5 9 5v13"/>
+        <path d="M9 21v-7h6v7"/>
+      </svg>
+      <span class="brand-name">Mandato</span>
+    </a>
+    <nav class="nav-links" aria-label="Principal">
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#mandatos">Mandatos activos</a>
+      <a href="#brokers">Brokers</a>
+    </nav>
+    <a href="#publicar" class="btn btn-primary btn-sm">Publicar</a>
+  </div>
+</header>
+
+<main>
+
+<section class="hero" id="publicar">
+  <div class="wrap">
+    <div class="hero-eyebrow">Medellín · finca raíz</div>
+    <h1>Dinos qué necesitas. Te traemos las opciones.</h1>
+    <p class="hero-lead">Inversionistas y compradores publican qué buscan. Nuestro equipo y brokers afiliados traen propiedades que encajan, incluyendo opciones off-market que nunca llegan a Fincaraíz.</p>
+
+    <div class="composer">
+      <label class="sr-only" for="post">Cuéntanos qué necesitas</label>
+      <textarea id="post" rows="3" placeholder="Cuéntanos en tus palabras qué buscas...">Busco apartamento de 2 habitaciones en El Poblado o Laureles para invertir en Airbnb, hasta 450 millones, pago de contado, lo necesito en los próximos 2 meses.</textarea>
+      <div class="composer-foot">
+        <span id="count">156 caracteres</span>
+        <span class="live-indicator"><span class="live-dot"></span>12 brokers activos hoy</span>
+      </div>
+    </div>
+
+    <div class="necesito">
+      <div class="necesito-head">
+        <span class="necesito-title">Necesito</span>
+        <span class="necesito-sub">selecciona lo que aplique · todo es opcional</span>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Tipo</span>
+        <div class="chip-row" data-multi>
+          <button type="button" class="chip selected">Apartamento</button>
+          <button type="button" class="chip">Apartaestudio</button>
+          <button type="button" class="chip">Casa</button>
+          <button type="button" class="chip">Lote</button>
+          <button type="button" class="chip">Local</button>
+          <button type="button" class="chip">Oficina</button>
+          <button type="button" class="chip">Finca</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Para qué</span>
+        <div class="chip-row" data-single>
+          <button type="button" class="chip selected">Inversión Airbnb</button>
+          <button type="button" class="chip">Renta larga</button>
+          <button type="button" class="chip">Vivir</button>
+          <button type="button" class="chip">Flip</button>
+          <button type="button" class="chip">No sé aún</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Zona</span>
+        <div class="chip-row" data-multi>
+          <button type="button" class="chip selected">El Poblado</button>
+          <button type="button" class="chip selected">Laureles</button>
+          <button type="button" class="chip">Envigado</button>
+          <button type="button" class="chip">Sabaneta</button>
+          <button type="button" class="chip">Belén</button>
+          <button type="button" class="chip">Centro</button>
+          <button type="button" class="chip">La América</button>
+          <button type="button" class="chip">Otra</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Habitaciones</span>
+        <div class="chip-row" data-multi>
+          <button type="button" class="chip">1</button>
+          <button type="button" class="chip selected">2</button>
+          <button type="button" class="chip">3</button>
+          <button type="button" class="chip">4 o más</button>
+          <button type="button" class="chip">indiferente</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Baños</span>
+        <div class="chip-row" data-multi>
+          <button type="button" class="chip">1</button>
+          <button type="button" class="chip selected">2</button>
+          <button type="button" class="chip">3 o más</button>
+          <button type="button" class="chip">indiferente</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Área desde</span>
+        <div class="chip-row" data-single>
+          <button type="button" class="chip">40 m²</button>
+          <button type="button" class="chip selected">60 m²</button>
+          <button type="button" class="chip">80 m²</button>
+          <button type="button" class="chip">100 m²</button>
+          <button type="button" class="chip">150 m² o más</button>
+          <button type="button" class="chip">indiferente</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Parqueaderos</span>
+        <div class="chip-row" data-single>
+          <button type="button" class="chip">0</button>
+          <button type="button" class="chip selected">1</button>
+          <button type="button" class="chip">2 o más</button>
+          <button type="button" class="chip">indiferente</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Estrato</span>
+        <div class="chip-row" data-multi>
+          <button type="button" class="chip">3</button>
+          <button type="button" class="chip">4</button>
+          <button type="button" class="chip selected">5</button>
+          <button type="button" class="chip selected">6</button>
+          <button type="button" class="chip">indiferente</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Presupuesto</span>
+        <div class="chip-row" data-single>
+          <button type="button" class="chip">Hasta $200M</button>
+          <button type="button" class="chip">$200 a $400M</button>
+          <button type="button" class="chip selected">$400 a $600M</button>
+          <button type="button" class="chip">$600M a $1.000M</button>
+          <button type="button" class="chip">$1.000M o más</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Forma de pago</span>
+        <div class="chip-row" data-single>
+          <button type="button" class="chip selected">Contado</button>
+          <button type="button" class="chip">Crédito hipotecario</button>
+          <button type="button" class="chip">Mixto</button>
+          <button type="button" class="chip">Permuta</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Plazo</span>
+        <div class="chip-row" data-single>
+          <button type="button" class="chip">Esta semana</button>
+          <button type="button" class="chip selected">1 a 3 meses</button>
+          <button type="button" class="chip">3 a 6 meses</button>
+          <button type="button" class="chip">Sin afán</button>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="more-toggle" id="more-toggle" aria-expanded="false" aria-controls="more-content">
+      <span class="more-toggle-text">Más detalles · amenidades, antigüedad, vista, mascotas</span>
+      <span class="more-toggle-arrow" aria-hidden="true">▾</span>
+    </button>
+
+    <div class="more-content" id="more-content">
+      <div class="more-inner">
+        <div class="row">
+          <span class="row-label">Estado</span>
+          <div class="chip-row" data-multi>
+            <button type="button" class="chip">Sobre planos</button>
+            <button type="button" class="chip">Nuevo</button>
+            <button type="button" class="chip selected">Usado</button>
+            <button type="button" class="chip">Para remodelar</button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-label">Antigüedad</span>
+          <div class="chip-row" data-single>
+            <button type="button" class="chip">Menos de 5 años</button>
+            <button type="button" class="chip selected">Menos de 15 años</button>
+            <button type="button" class="chip">Indiferente</button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-label">Amoblado</span>
+          <div class="chip-row" data-single>
+            <button type="button" class="chip">Sí</button>
+            <button type="button" class="chip">No</button>
+            <button type="button" class="chip selected">Indiferente</button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-label">Amenidades</span>
+          <div class="chip-row" data-multi>
+            <button type="button" class="chip selected">Ascensor</button>
+            <button type="button" class="chip">Piscina</button>
+            <button type="button" class="chip">Gimnasio</button>
+            <button type="button" class="chip selected">Balcón</button>
+            <button type="button" class="chip">Terraza</button>
+            <button type="button" class="chip">Salón social</button>
+            <button type="button" class="chip selected">Vigilancia 24h</button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-label">Vista</span>
+          <div class="chip-row" data-single>
+            <button type="button" class="chip">Ciudad</button>
+            <button type="button" class="chip">Montaña</button>
+            <button type="button" class="chip">Interior</button>
+            <button type="button" class="chip selected">Indiferente</button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-label">Mascotas</span>
+          <div class="chip-row" data-single>
+            <button type="button" class="chip">Sí, las llevo</button>
+            <button type="button" class="chip selected">No aplica</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="publish-bar">
+      <p class="publish-note">Solo asignamos tu mandato a 3 brokers verificados de tu zona. Tu publicación es privada hasta que aceptes una oferta.</p>
+      <button type="button" class="btn btn-primary btn-block" id="publish-btn">Publicar y recibir ofertas</button>
+    </div>
+  </div>
+</section>
+
+<section class="section alt" id="mandatos">
+  <div class="wrap">
+    <h2>Mandatos activos ahora</h2>
+    <p class="section-sub">Estos compradores ya están publicados. Si eres broker afiliado, puedes postularte a los que tengan cupo.</p>
+    <div class="live-feed">
+      <article class="live-card">
+        <p class="live-text">Apartamento 2 hab en El Poblado o Laureles para Airbnb · 60 m² o más · estrato 5–6 · contado · hasta $450M.</p>
+        <div class="live-meta">
+          <div class="live-tags">
+            <span class="live-tag hot">verificado</span>
+            <span class="live-tag">contado</span>
+            <span class="live-tag">1 a 3 meses</span>
+          </div>
+          <span class="live-time">hace 6 horas · 3 ofertas</span>
+        </div>
+      </article>
+      <article class="live-card">
+        <p class="live-text">Casa familiar en Envigado · 3 habitaciones · con patio · estrato 5 · crédito pre-aprobado · hasta $900M.</p>
+        <div class="live-meta">
+          <div class="live-tags">
+            <span class="live-tag hot">verificado</span>
+            <span class="live-tag">crédito aprobado</span>
+            <span class="live-tag">3 a 6 meses</span>
+          </div>
+          <span class="live-time">hace 2 días · 2 ofertas</span>
+        </div>
+      </article>
+      <article class="live-card">
+        <p class="live-text">Apartaestudio en Provenza para flip · acepta para remodelar · hasta $280M · contado.</p>
+        <div class="live-meta">
+          <div class="live-tags">
+            <span class="live-tag">contado</span>
+            <span class="live-tag">esta semana</span>
+          </div>
+          <span class="live-time">hace 1 día · 0 ofertas · cupo abierto</span>
+        </div>
+      </article>
+      <article class="live-card">
+        <p class="live-text">Lote en Las Palmas o Llanogrande · 800 a 1.200M · sin afán · prefiere con vista a la ciudad.</p>
+        <div class="live-meta">
+          <div class="live-tags">
+            <span class="live-tag">sin afán</span>
+          </div>
+          <span class="live-time">hace 5 días · 1 oferta</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="como-funciona">
+  <div class="wrap">
+    <h2>Cómo funciona</h2>
+    <p class="section-sub">Tu mandato vive 30 días. Si no cierras, puedes renovar gratis.</p>
+    <div class="how-grid">
+      <article class="how-card">
+        <div class="how-num">1</div>
+        <div class="how-title">Publica tu mandato</div>
+        <p class="how-desc">Cuéntanos qué buscas en una frase y marca lo que aplique. Te toma menos de un minuto.</p>
+      </article>
+      <article class="how-card">
+        <div class="how-num">2</div>
+        <div class="how-title">Recibe ofertas filtradas</div>
+        <p class="how-desc">Nuestro equipo y máximo tres brokers verificados te traen opciones que cumplan, en menos de 48 horas.</p>
+      </article>
+      <article class="how-card">
+        <div class="how-num">3</div>
+        <div class="how-title">Visita y cierra</div>
+        <p class="how-desc">Comparas en una sola pantalla, agendas visitas y cierras con respaldo legal. Solo pagas si cierras.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="wrap">
+    <h2>¿Listo para que las propiedades te encuentren a ti?</h2>
+    <p>Publica tu mandato hoy. Sin costo, sin compromiso.</p>
+    <a href="#publicar" class="btn btn-primary">Empezar ahora</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span class="foot-text">© Mandato 2026 · Medellín, Colombia</span>
+    <div class="foot-links">
+      <a href="#">Términos</a>
+      <a href="#">Privacidad</a>
+      <a href="#">Contacto</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function() {
+  // Single-select chip rows
+  document.querySelectorAll('.chip-row[data-single]').forEach(function(row) {
+    row.querySelectorAll('.chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        row.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('selected'); });
+        chip.classList.add('selected');
+      });
+    });
+  });
+
+  // Multi-select chip rows
+  document.querySelectorAll('.chip-row[data-multi]').forEach(function(row) {
+    row.querySelectorAll('.chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        chip.classList.toggle('selected');
+      });
+    });
+  });
+
+  // Composer character count
+  var post = document.getElementById('post');
+  var count = document.getElementById('count');
+  function updateCount() {
+    if (post && count) count.textContent = post.value.length + ' caracteres';
+  }
+  if (post) {
+    post.addEventListener('input', updateCount);
+    updateCount();
+  }
+
+  // More toggle
+  var toggle = document.getElementById('more-toggle');
+  var content = document.getElementById('more-content');
+  if (toggle && content) {
+    toggle.addEventListener('click', function() {
+      var open = toggle.classList.toggle('open');
+      content.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+
+  // Publish button (placeholder action)
+  var publishBtn = document.getElementById('publish-btn');
+  if (publishBtn) {
+    publishBtn.addEventListener('click', function() {
+      var text = post ? post.value.trim() : '';
+      if (text.length < 20) {
+        alert('Cuéntanos un poco más sobre lo que buscas (mínimo 20 caracteres).');
+        if (post) post.focus();
+        return;
+      }
+      alert('¡Tu mandato fue publicado! En las próximas 48 horas recibirás ofertas por WhatsApp.\n\n(En producción: aquí va el formulario de contacto + WhatsApp + verificación.)');
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
