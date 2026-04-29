@@ -8,7 +8,7 @@ window.MANDATO_CONFIG = {
   // ===== Supabase =====
   // Reemplaza con tus valores reales del dashboard de Supabase
   SUPABASE_URL: 'https://lrmlxhryfqyeutwfytwc.supabase.co',
-  SUPABASE_ANON_KEY: 'PEGA_AQUI_TU_ANON_KEY',
+  SUPABASE_ANON_KEY: 'sb_publishable_0b1l_QaqYe876FAAGPXKQA_Qt2ct5Zj',
 
   // ===== Wompi =====
   // Obtén tus llaves en https://comercios.wompi.co/
@@ -22,7 +22,7 @@ window.MANDATO_CONFIG = {
   CIUDAD_DEFAULT: 'Medellín',
 
   // ===== Admin =====
-  ADMIN_PASSWORD: 'CAMBIA_ESTA_PASSWORD',
+  ADMIN_PASSWORD: 'Ivanko1232',
 
   // ===== URLs =====
   // URL base de tu sitio (sin / al final)
