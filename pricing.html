@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F6E56">
+<title>Mandato — Planes y precios</title>
+<meta name="description" content="Planes para inversionistas y brokers. Publica tu mandato gratis o accede a más con Premium. Brokers desde $149.000/mes.">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .pricing-hero { padding: 48px 0 24px; text-align: center; }
+  .pricing-hero h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 10px; }
+  .pricing-hero p { font-size: 15px; color: var(--text-muted); max-width: 540px; margin: 0 auto; }
+  @media (min-width: 720px) {
+    .pricing-hero h1 { font-size: 44px; }
+  }
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin: 24px auto 32px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-pill);
+    padding: 4px;
+    width: fit-content;
+  }
+  .tab {
+    padding: 9px 22px;
+    border-radius: var(--radius-pill);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .tab.active { background: var(--brand); color: white; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .tab-intro { text-align: center; margin-bottom: 24px; font-size: 14px; color: var(--text-muted); max-width: 560px; margin-left: auto; margin-right: auto; }
+  .faq { margin-top: 48px; }
+  .faq-item { border-bottom: 0.5px solid var(--border); padding: 16px 0; }
+  .faq-item summary { cursor: pointer; font-size: 15px; font-weight: 500; padding: 4px 0; list-style: none; display: flex; justify-content: space-between; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after { content: '+'; color: var(--text-muted); font-size: 22px; line-height: 1; }
+  .faq-item[open] summary::after { content: '−'; }
+  .faq-item p { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin: 8px 0 0; }
+  .commission-note {
+    background: var(--brand-light);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--brand-text);
+    line-height: 1.55;
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">
+      <svg class="brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 21V8l9-5 9 5v13"/>
+        <path d="M9 21v-7h6v7"/>
+      </svg>
+      <span class="brand-name">Mandato</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="pricing.html">Planes</a>
+      <a href="brokers.html">Brokers</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="mi-cuenta.html" class="btn btn-ghost btn-sm">Iniciar sesión</a>
+      <a href="signup-comprador.html" class="btn btn-primary btn-sm">Empezar</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section class="pricing-hero">
+  <div class="wrap-wide">
+    <h1>Planes simples. Resultados reales.</h1>
+    <p>Publica tu mandato gratis o accede a beneficios premium. Si eres broker, elige el plan que mejor encaja con tu volumen.</p>
+
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab active" data-tab="comprador">Soy inversionista</button>
+      <button type="button" class="tab" data-tab="broker">Soy broker</button>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap-wide">
+
+    <!-- ===== Tab Comprador ===== -->
+    <div class="tab-content active" id="tab-comprador">
+      <p class="tab-intro">Empieza gratis con un mandato. Si necesitas más volumen u ofertas premium, sube a Pro.</p>
+
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="pricing-card-name">Free</div>
+          <div class="pricing-card-price">$0 <small>/ siempre</small></div>
+          <div class="pricing-card-tagline">Perfecto si quieres probar la plataforma.</div>
+          <ul>
+            <li>1 mandato activo a la vez</li>
+            <li>Vigencia de 15 días</li>
+            <li>Ofertas estándar de brokers afiliados</li>
+            <li>Contacto por WhatsApp</li>
+            <li>Sin costo de cierre · sin letra pequeña</li>
+          </ul>
+          <a href="signup-comprador.html?plan=comprador_free" class="btn btn-block">Empezar gratis</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <div class="pricing-card-name">Premium</div>
+          <div class="pricing-card-price">$79.000 <small>/ mes</small></div>
+          <div class="pricing-card-tagline">Para quien quiere las mejores propiedades primero.</div>
+          <ul>
+            <li>5 mandatos activos simultáneos</li>
+            <li>Vigencia de 30 días renovable</li>
+            <li>Ofertas off-market priorizadas</li>
+            <li>Asesor humano dedicado</li>
+            <li>Badge "verificado" visible para brokers</li>
+            <li>Soporte prioritario</li>
+          </ul>
+          <a href="signup-comprador.html?plan=comprador_premium" class="btn btn-primary btn-block">Empezar Premium</a>
+        </div>
+      </div>
+
+      <div class="commission-note">
+        <strong>Sin comisiones de cierre.</strong> Lo que pagas mensual es todo. Si encuentras tu propiedad, no nos llevamos un porcentaje del precio. Puedes cancelar tu suscripción cuando quieras.
+      </div>
+    </div>
+
+    <!-- ===== Tab Broker ===== -->
+    <div class="tab-content" id="tab-broker">
+      <p class="tab-intro">Acceso a inversionistas verificados con presupuesto real. Todos los planes incluyen perfil verificado y reseñas públicas.</p>
+
+      <div class="pricing-grid three">
+        <div class="pricing-card">
+          <div class="pricing-card-name">Básico</div>
+          <div class="pricing-card-price">$149.000 <small>/ mes</small></div>
+          <div class="pricing-card-tagline">Ideal para brokers que cierran 2-5 deals al año.</div>
+          <ul>
+            <li>Hasta 10 mandatos por mes</li>
+            <li>Contacto vía plataforma</li>
+            <li>1 ciudad de operación</li>
+            <li>Perfil público verificado</li>
+            <li>Soporte estándar</li>
+          </ul>
+          <a href="signup-broker.html?plan=broker_basico" class="btn btn-block">Empezar Básico</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <div class="pricing-card-name">Pro</div>
+          <div class="pricing-card-price">$349.000 <small>/ mes</small></div>
+          <div class="pricing-card-tagline">El plan más popular. Cierra 1 deal y se paga 30x.</div>
+          <ul>
+            <li>Mandatos ilimitados</li>
+            <li>Contacto directo (WhatsApp visible)</li>
+            <li>Prioridad en asignación de leads</li>
+            <li>Badge verificado destacado</li>
+            <li>Hasta 3 ciudades</li>
+            <li>Soporte prioritario</li>
+          </ul>
+          <a href="signup-broker.html?plan=broker_pro" class="btn btn-primary btn-block">Empezar Pro</a>
+        </div>
+
+        <div class="pricing-card elite">
+          <div class="pricing-card-name">Élite</div>
+          <div class="pricing-card-price">$799.000 <small>/ mes</small></div>
+          <div class="pricing-card-tagline">Para inmobiliarias y brokers de alto volumen.</div>
+          <ul>
+            <li>Todo lo de Pro</li>
+            <li>Mandatos premium destacados primero</li>
+            <li>API para integrar con tu CRM</li>
+            <li>Soporte dedicado 1:1</li>
+            <li>Sin límite de ciudades</li>
+            <li>Reportes mensuales personalizados</li>
+          </ul>
+          <a href="signup-broker.html?plan=broker_elite" class="btn btn-block">Empezar Élite</a>
+        </div>
+      </div>
+
+      <div class="commission-note">
+        <strong>Sin comisiones por cierre.</strong> Tu comisión completa es tuya. Solo pagas la suscripción mensual fija — sin importar cuántos deals cierres.
+      </div>
+    </div>
+
+    <!-- ===== FAQ ===== -->
+    <div class="faq">
+      <h2 style="text-align:center; margin-bottom:8px;">Preguntas frecuentes</h2>
+      <p class="section-sub" style="text-align:center;">Si no encuentras tu pregunta, escríbenos por WhatsApp.</p>
+      <div style="max-width:680px; margin:24px auto 0;">
+        <details class="faq-item">
+          <summary>¿Puedo cancelar cuando quiera?</summary>
+          <p>Sí. Cancelas desde tu panel de cuenta y mantienes los beneficios hasta el fin del período pagado. No hay permanencia mínima ni penalización.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Cobran comisión por el cierre del inmueble?</summary>
+          <p>No. Mandato no se queda con un porcentaje del precio del inmueble. Tu suscripción mensual cubre todo el servicio. Las comisiones entre comprador y broker se manejan directamente entre ustedes según el acuerdo tradicional del mercado.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Qué métodos de pago aceptan?</summary>
+          <p>Aceptamos tarjetas de crédito y débito, PSE, Nequi, Bancolombia y otros métodos a través de Wompi. Todos los pagos son en pesos colombianos (COP).</p>
+        </details>
+        <details class="faq-item">
+          <summary>Soy comprador free, ¿qué pasa cuando vencen mis 15 días?</summary>
+          <p>Tu mandato pasa a estado "expirado". Puedes publicar uno nuevo gratis cuantas veces quieras, pero solo puedes tener 1 activo a la vez. Si quieres mantener varios o extender la vigencia, sube a Premium.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Soy broker, ¿qué pasa si no cierro nada en mi primer mes?</summary>
+          <p>La suscripción es mensual. Si no cierras, no te cobramos comisión adicional, pero la mensualidad ya está pagada. Te recomendamos empezar con Básico y subir cuando veas tu volumen real. La mayoría de nuestros brokers cierran su primer deal en los primeros 60 días.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Cómo verifican a los inversionistas?</summary>
+          <p>Para inversionistas Premium pedimos certificado de fondos o pre-aprobación crediticia. Para Free, validamos identidad y teléfono. El badge "verificado" que ven los brokers solo aparece cuando hemos confirmado capacidad financiera real.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Cómo verifican a los brokers?</summary>
+          <p>Pedimos cédula, matrícula inmobiliaria si aplica, y referencias de cierres previos. Brokers Pro y Élite pasan una entrevista corta antes de activar el plan.</p>
+        </details>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap-wide foot-inner">
+    <span class="foot-text">© Mandato 2026 · Medellín, Colombia</span>
+    <div class="foot-links">
+      <a href="#">Términos</a>
+      <a href="#">Privacidad</a>
+      <a href="#">Contacto</a>
+    </div>
+  </div>
+</footer>
+
+<a href="#" class="wa-fab" id="wa-fab" aria-label="WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script src="config.js"></script>
+<script>
+(function() {
+  var tabs = document.querySelectorAll('.tab');
+  var contents = document.querySelectorAll('.tab-content');
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var target = tab.getAttribute('data-tab');
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      contents.forEach(function(c){ c.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('tab-' + target).classList.add('active');
+    });
+  });
+  // Auto-select tab from URL ?tab=broker
+  var initial = window.MANDATO_HELPERS.getURLParam('tab');
+  if (initial === 'broker') {
+    document.querySelector('[data-tab="broker"]').click();
+  }
+  // FAB
+  document.getElementById('wa-fab').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.open('https://wa.me/' + window.MANDATO_CONFIG.WHATSAPP_NUMBER + '?text=' +
+      encodeURIComponent('Hola Mandato, quisiera más info sobre los planes.'), '_blank');
+  });
+})();
+</script>
+
+</body>
+</html>

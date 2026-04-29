@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0F6E56">
+<title>Mandato — Crear cuenta de inversionista</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .signup-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin: 32px 0 48px;
+  }
+  @media (min-width: 900px) {
+    .signup-layout { grid-template-columns: 1.4fr 1fr; gap: 40px; }
+  }
+  .signup-form { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 24px 22px; }
+  .signup-summary { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 24px 22px; height: fit-content; position: sticky; top: 80px; }
+  .signup-form h1 { font-size: 22px; margin: 0 0 6px; font-weight: 600; letter-spacing: -0.015em; }
+  .signup-form p.lead { font-size: 14px; color: var(--text-muted); margin: 0 0 22px; }
+  .summary-plan { font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+  .summary-name { font-size: 22px; font-weight: 600; margin-bottom: 4px; letter-spacing: -0.015em; }
+  .summary-price { font-size: 32px; font-weight: 600; margin-bottom: 4px; letter-spacing: -0.02em; }
+  .summary-price small { font-size: 14px; color: var(--text-muted); font-weight: 400; }
+  .summary-divider { border: 0; border-top: 0.5px solid var(--border); margin: 18px 0; }
+  .summary-features { list-style: none; padding: 0; margin: 0; }
+  .summary-features li { font-size: 13px; padding: 5px 0 5px 22px; position: relative; color: var(--text); line-height: 1.45; }
+  .summary-features li::before { content: ''; position: absolute; left: 0; top: 11px; width: 12px; height: 6px; border-left: 2px solid var(--brand); border-bottom: 2px solid var(--brand); transform: rotate(-45deg); }
+  .change-plan { font-size: 12px; color: var(--brand); text-decoration: none; }
+  .change-plan:hover { text-decoration: underline; }
+  .secure-note { font-size: 11px; color: var(--text-faint); text-align: center; margin-top: 12px; line-height: 1.5; }
+  .secure-note svg { vertical-align: -2px; margin-right: 4px; }
+  .step-counter { font-size: 11px; color: var(--text-faint); margin-bottom: 4px; letter-spacing: 0.04em; }
+  .step-bar { height: 3px; background: var(--surface-alt); border-radius: 2px; margin-bottom: 22px; overflow: hidden; }
+  .step-bar > div { height: 100%; background: var(--brand); transition: width 0.3s; }
+  .step-section { display: none; }
+  .step-section.active { display: block; animation: fadeIn 0.25s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .actions-row { display: flex; gap: 8px; margin-top: 20px; }
+  .actions-row .btn { flex: 1; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">
+      <svg class="brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 21V8l9-5 9 5v13"/>
+        <path d="M9 21v-7h6v7"/>
+      </svg>
+      <span class="brand-name">Mandato</span>
+    </a>
+    <div class="nav-actions">
+      <a href="pricing.html" class="btn btn-ghost btn-sm">Cambiar plan</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="signup-layout">
+
+    <div class="signup-form">
+      <div class="step-counter" id="step-counter">paso 1 de 3</div>
+      <div class="step-bar"><div id="step-bar-fill" style="width:33%"></div></div>
+
+      <h1>Crea tu cuenta</h1>
+      <p class="lead">Empieza a recibir ofertas en menos de 48 horas.</p>
+
+      <!-- ===== Step 1: Datos ===== -->
+      <div class="step-section active" data-step="1">
+        <div class="form-field" id="field-name">
+          <label for="form-name">Nombre completo</label>
+          <input type="text" id="form-name" autocomplete="name" placeholder="Tu nombre">
+          <div class="form-error">Cuéntanos cómo te llamas.</div>
+        </div>
+        <div class="form-field" id="field-phone">
+          <label for="form-phone">WhatsApp</label>
+          <div class="phone-input" id="phone-input">
+            <span class="phone-prefix">+57</span>
+            <input type="tel" id="form-phone" autocomplete="tel" placeholder="3001234567" inputmode="numeric" maxlength="10">
+          </div>
+          <div class="form-error">Ingresa un celular válido de 10 dígitos.</div>
+        </div>
+        <div class="form-field" id="field-email">
+          <label for="form-email">Email</label>
+          <input type="email" id="form-email" autocomplete="email" placeholder="tu@ejemplo.com">
+          <div class="form-error">Ingresa un email válido.</div>
+        </div>
+        <div class="form-field">
+          <label for="form-city">Ciudad de interés</label>
+          <select id="form-city">
+            <option value="Medellín">Medellín</option>
+            <option value="Bogotá">Bogotá</option>
+            <option value="Cali">Cali</option>
+            <option value="Cartagena">Cartagena</option>
+            <option value="Barranquilla">Barranquilla</option>
+            <option value="Otra">Otra</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-step1">Continuar</button>
+      </div>
+
+      <!-- ===== Step 2: Confirmar ===== -->
+      <div class="step-section" data-step="2">
+        <div class="card" style="margin-bottom:20px">
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">Tu información</div>
+          <div id="confirm-data" style="font-size:14px; line-height:1.7;"></div>
+        </div>
+        <p style="font-size:13px; color:var(--text-muted); line-height:1.6;">
+          Al continuar aceptas nuestros <a href="#" style="color:var(--brand)">Términos</a> y <a href="#" style="color:var(--brand)">Política de privacidad</a>. Tus datos solo se usan para conectarte con brokers verificados.
+        </p>
+        <div class="actions-row">
+          <button type="button" class="btn" id="btn-step2-back">Atrás</button>
+          <button type="button" class="btn btn-primary" id="btn-step2-next">Continuar al pago</button>
+        </div>
+      </div>
+
+      <!-- ===== Step 3: Pago / activación ===== -->
+      <div class="step-section" data-step="3">
+        <div id="payment-section">
+          <h2 style="font-size:17px; margin: 0 0 8px;">Activa tu plan</h2>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 18px;">Pago seguro a través de Wompi. Aceptamos tarjeta, PSE, Nequi y más.</p>
+
+          <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-pay" style="margin-bottom:10px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="pay-button-text">Pagar y activar</span>
+          </button>
+
+          <p class="secure-note">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Pago 100% seguro · procesado por Wompi
+          </p>
+        </div>
+
+        <div id="free-section" style="display:none">
+          <h2 style="font-size:17px; margin: 0 0 8px;">Listo para empezar</h2>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 18px;">Tu cuenta gratuita se activa en este momento. Después puedes publicar tu primer mandato.</p>
+          <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-activate-free">Activar cuenta gratis</button>
+        </div>
+
+        <div class="actions-row">
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-step3-back">Atrás</button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="signup-summary" id="plan-summary">
+      <!-- Se renderiza con JS -->
+    </aside>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span class="foot-text">© Mandato 2026</span>
+    <div class="foot-links">
+      <a href="#">Términos</a>
+      <a href="#">Privacidad</a>
+    </div>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script>
+(function() {
+  var H = window.MANDATO_HELPERS;
+  var DB = window.MANDATO_DB;
+  var planId = H.getURLParam('plan') || 'comprador_free';
+
+  // Catálogo de planes (debe coincidir con schema.sql)
+  var PLANS = {
+    comprador_free: {
+      id: 'comprador_free',
+      nombre: 'Free',
+      precio: 0,
+      vigencia: 15,
+      tagline: 'Para empezar a explorar.',
+      features: [
+        '1 mandato activo',
+        'Vigencia 15 días',
+        'Ofertas estándar',
+        'Contacto por WhatsApp'
+      ]
+    },
+    comprador_premium: {
+      id: 'comprador_premium',
+      nombre: 'Premium',
+      precio: 79000,
+      vigencia: 30,
+      tagline: 'Para inversionistas serios.',
+      features: [
+        '5 mandatos simultáneos',
+        'Vigencia 30 días renovable',
+        'Ofertas off-market priorizadas',
+        'Asesor humano dedicado',
+        'Badge verificado'
+      ]
+    }
+  };
+
+  var plan = PLANS[planId] || PLANS.comprador_free;
+
+  // Renderizar resumen del plan
+  function renderSummary() {
+    var html =
+      '<div class="summary-plan">Plan elegido</div>' +
+      '<div class="summary-name">' + H.escapeHtml(plan.nombre) + '</div>' +
+      '<div class="summary-price">' +
+        (plan.precio === 0 ? 'Gratis' : H.formatCOP(plan.precio)) +
+        (plan.precio > 0 ? ' <small>/ mes</small>' : '') +
+      '</div>' +
+      '<div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">' + plan.tagline + '</div>' +
+      '<a href="pricing.html" class="change-plan">Cambiar plan →</a>' +
+      '<hr class="summary-divider">' +
+      '<div style="font-size:12px; color:var(--text-muted); margin-bottom:10px; font-weight:500; letter-spacing:0.04em; text-transform:uppercase;">Incluye</div>' +
+      '<ul class="summary-features">' +
+        plan.features.map(function(f) { return '<li>' + H.escapeHtml(f) + '</li>'; }).join('') +
+      '</ul>';
+
+    if (plan.precio > 0) {
+      html += '<hr class="summary-divider">' +
+        '<div style="display:flex; justify-content:space-between; font-size:14px; font-weight:500;">' +
+        '<span>Total hoy</span>' +
+        '<span>' + H.formatCOP(plan.precio) + ' COP</span>' +
+        '</div>' +
+        '<div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Renovación mensual automática · cancela cuando quieras</div>';
+    }
+
+    document.getElementById('plan-summary').innerHTML = html;
+  }
+  renderSummary();
+
+  // Step navigation
+  var currentStep = 1;
+  function goToStep(n) {
+    currentStep = n;
+    document.querySelectorAll('.step-section').forEach(function(s) { s.classList.remove('active'); });
+    document.querySelector('[data-step="' + n + '"]').classList.add('active');
+    document.getElementById('step-counter').textContent = 'paso ' + n + ' de 3';
+    document.getElementById('step-bar-fill').style.width = (n * 33.33) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ===== Step 1 → Step 2 =====
+  document.getElementById('btn-step1').addEventListener('click', function() {
+    if (!validateStep1()) return;
+    var name = document.getElementById('form-name').value.trim();
+    var phone = document.getElementById('form-phone').value.trim();
+    var email = document.getElementById('form-email').value.trim();
+    var city = document.getElementById('form-city').value;
+    document.getElementById('confirm-data').innerHTML =
+      '<div><strong>' + H.escapeHtml(name) + '</strong></div>' +
+      '<div style="color:var(--text-muted)">+57 ' + H.escapeHtml(phone) + '</div>' +
+      '<div style="color:var(--text-muted)">' + H.escapeHtml(email) + '</div>' +
+      '<div style="color:var(--text-muted)">Ciudad: ' + H.escapeHtml(city) + '</div>';
+    goToStep(2);
+  });
+
+  document.getElementById('btn-step2-back').addEventListener('click', function() { goToStep(1); });
+  document.getElementById('btn-step3-back').addEventListener('click', function() { goToStep(2); });
+
+  document.getElementById('btn-step2-next').addEventListener('click', function() {
+    if (plan.precio === 0) {
+      document.getElementById('payment-section').style.display = 'none';
+      document.getElementById('free-section').style.display = 'block';
+    } else {
+      document.getElementById('payment-section').style.display = 'block';
+      document.getElementById('free-section').style.display = 'none';
+      document.getElementById('pay-button-text').textContent = 'Pagar ' + H.formatCOP(plan.precio) + ' y activar';
+    }
+    goToStep(3);
+  });
+
+  // ===== Validations =====
+  function validateStep1() {
+    var ok = true;
+    document.querySelectorAll('.form-field').forEach(function(f){ f.classList.remove('has-error'); });
+    document.getElementById('phone-input').classList.remove('error');
+
+    var name = document.getElementById('form-name').value.trim();
+    var phone = document.getElementById('form-phone').value.trim();
+    var email = document.getElementById('form-email').value.trim();
+
+    if (name.length < 2) { document.getElementById('field-name').classList.add('has-error'); ok = false; }
+    if (!/^3\d{9}$/.test(phone)) {
+      document.getElementById('field-phone').classList.add('has-error');
+      document.getElementById('phone-input').classList.add('error');
+      ok = false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      document.getElementById('field-email').classList.add('has-error');
+      ok = false;
+    }
+    return ok;
+  }
+
+  // Solo dígitos en teléfono
+  document.getElementById('form-phone').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+  });
+
+  // ===== Crear usuario y activar / pagar =====
+  function getFormData() {
+    return {
+      name: document.getElementById('form-name').value.trim(),
+      phone: document.getElementById('form-phone').value.trim(),
+      email: document.getElementById('form-email').value.trim(),
+      city: document.getElementById('form-city').value
+    };
+  }
+
+  function createUser(data, planId, planVenceAt) {
+    var userId = H.uid('u');
+    return DB.insert('usuarios', {
+      id: userId,
+      nombre: data.name,
+      telefono: data.phone,
+      email: data.email,
+      ciudad: data.city,
+      plan_id: planId,
+      plan_vence_at: planVenceAt
+    }).then(function() { return userId; });
+  }
+
+  function createSubscription(userId, planId, monto) {
+    var subId = H.uid('sub');
+    var now = new Date();
+    var fin = new Date(now.getTime() + plan.vigencia * 24 * 3600 * 1000);
+    return DB.insert('suscripciones', {
+      id: subId,
+      usuario_id: userId,
+      plan_id: planId,
+      inicio_at: now.toISOString(),
+      fin_at: fin.toISOString(),
+      estado: monto === 0 ? 'active' : 'pending',
+      monto: monto
+    }).then(function() { return subId; });
+  }
+
+  function recordPayment(subId, userId, transaction) {
+    return DB.insert('pagos', {
+      id: H.uid('pay'),
+      suscripcion_id: subId,
+      wompi_transaction_id: transaction.id,
+      wompi_reference: transaction.reference,
+      monto: Math.round(transaction.amountInCents / 100),
+      estado: transaction.status === 'APPROVED' ? 'approved' : 'declined',
+      metodo_pago: transaction.paymentMethodType || 'unknown',
+      usuario_id: userId,
+      payer_email: getFormData().email,
+      payer_phone: getFormData().phone,
+      raw_response: transaction,
+      approved_at: transaction.status === 'APPROVED' ? new Date().toISOString() : null
+    });
+  }
+
+  function activateSubscription(subId) {
+    return DB.update('suscripciones', subId, { estado: 'active' });
+  }
+
+  function redirectToAccount(userToken) {
+    window.location.href = 'mi-cuenta.html?token=' + encodeURIComponent(userToken);
+  }
+
+  function getUserToken(userId) {
+    return DB.select('usuarios', 'id=eq.' + encodeURIComponent(userId) + '&select=client_token')
+      .then(function(rows) { return rows && rows[0] ? rows[0].client_token : null; });
+  }
+
+  function handleSuccess(userId) {
+    H.showToast('¡Listo! Tu cuenta está activa');
+    if (DB.isConfigured()) {
+      getUserToken(userId).then(function(token) {
+        if (token) redirectToAccount(token);
+        else window.location.href = 'mi-cuenta.html';
+      });
+    } else {
+      // Modo demo sin Supabase
+      try { localStorage.setItem('mandato_demo_user', JSON.stringify({ id: userId, ...getFormData(), planId: plan.id })); } catch(e) {}
+      setTimeout(function() { window.location.href = 'mi-cuenta.html?demo=1'; }, 600);
+    }
+  }
+
+  // ===== Activar gratis =====
+  document.getElementById('btn-activate-free').addEventListener('click', function() {
+    var data = getFormData();
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Activando...';
+
+    var venceAt = new Date(Date.now() + plan.vigencia * 24 * 3600 * 1000).toISOString();
+
+    if (!DB.isConfigured()) {
+      setTimeout(function() {
+        var userId = H.uid('u');
+        handleSuccess(userId);
+      }, 800);
+      return;
+    }
+
+    createUser(data, plan.id, venceAt)
+      .then(function(userId) { return createSubscription(userId, plan.id, 0).then(function(){ return userId; }); })
+      .then(function(userId) { handleSuccess(userId); })
+      .catch(function(err) {
+        console.error(err);
+        H.showToast('Error: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Activar cuenta gratis';
+      });
+  });
+
+  // ===== Pago Premium =====
+  document.getElementById('btn-pay').addEventListener('click', function() {
+    var data = getFormData();
+    var btn = this;
+    btn.disabled = true;
+
+    var venceAt = new Date(Date.now() + plan.vigencia * 24 * 3600 * 1000).toISOString();
+    var reference = 'mandato_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+
+    var afterUserCreated = function(userId, subId) {
+      window.MANDATO_WOMPI.open({
+        amount: plan.precio,
+        reference: reference,
+        email: data.email,
+        name: data.name,
+        phone: data.phone,
+        onSuccess: function(transaction) {
+          var promises = [recordPayment(subId, userId, transaction), activateSubscription(subId)];
+          Promise.all(promises).then(function() { handleSuccess(userId); })
+            .catch(function(err) {
+              console.error(err);
+              handleSuccess(userId); // Continuar aunque falle el log
+            });
+        },
+        onError: function(transaction) {
+          H.showToast('Pago no completado. Intenta de nuevo.');
+          btn.disabled = false;
+        }
+      });
+    };
+
+    if (!DB.isConfigured()) {
+      // Modo demo
+      var userId = H.uid('u');
+      afterUserCreated(userId, H.uid('sub'));
+      return;
+    }
+
+    createUser(data, 'comprador_free', null) // Empieza free, luego activa premium si pago ok
+      .then(function(userId) {
+        return createSubscription(userId, plan.id, plan.precio).then(function(subId) {
+          // Cuando pago ok, actualizamos plan del usuario
+          afterUserCreated(userId, subId);
+          return null;
+        });
+      })
+      .catch(function(err) {
+        console.error(err);
+        H.showToast('Error: ' + err.message);
+        btn.disabled = false;
+      });
+  });
+
+})();
+</script>
+
+</body>
+</html>

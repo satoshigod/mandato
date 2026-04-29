@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F6E56">
+<meta name="robots" content="noindex">
+<title>Mi cuenta — Mandato</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .login-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 32px 28px; max-width: 380px; width: 100%; box-shadow: var(--shadow-md); }
+  .login-card h1 { font-size: 20px; margin: 0 0 6px; font-weight: 600; letter-spacing: -0.015em; }
+  .login-card p { font-size: 13px; color: var(--text-muted); margin: 0 0 20px; }
+  .app { display: none; }
+  .app.active { display: block; }
+  .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+  @media (min-width: 720px) { .stats-row { grid-template-columns: repeat(4, 1fr); } }
+  .stat-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; }
+  .stat-label { font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; }
+  .stat-value { font-size: 22px; font-weight: 600; margin-top: 2px; letter-spacing: -0.02em; }
+  .section-head { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 12px; flex-wrap: wrap; gap: 8px; }
+  .section-head h2 { font-size: 17px; margin: 0; font-weight: 600; }
+  .mandate-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 10px; }
+  .mandate-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .mandate-card-text { font-size: 14px; line-height: 1.55; margin: 4px 0 10px; }
+  .mandate-card-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 11px; color: var(--text-faint); }
+  .mandate-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 0.5px dashed var(--border); }
+  .offers-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 0.5px solid var(--border); }
+  .offer { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .offer-head { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; margin-bottom: 4px; }
+  .offer-name { font-size: 13px; font-weight: 500; }
+  .offer-loc { font-size: 11px; color: var(--text-muted); }
+  .offer-price { font-size: 14px; font-weight: 600; }
+  .offer-why { font-size: 12px; color: var(--text-muted); line-height: 1.5; padding-left: 8px; border-left: 2px solid var(--brand); margin-top: 6px; }
+  .empty { background: var(--surface); border: 0.5px dashed var(--border-strong); border-radius: var(--radius-lg); padding: 50px 24px; text-align: center; color: var(--text-muted); }
+  .empty h3 { font-size: 16px; color: var(--text); margin: 0 0 6px; font-weight: 500; }
+  .empty p { font-size: 13px; margin: 0 auto; max-width: 320px; line-height: 1.6; }
+  .composer { background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: var(--radius-lg); padding: 16px; }
+  .composer textarea { width: 100%; min-height: 90px; border: none; background: transparent; resize: none; font-size: 16px; line-height: 1.55; color: var(--text); outline: none; padding: 0; font-family: inherit; }
+  .row-mini { padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+  .row-mini:last-child { border-bottom: 0; }
+  .row-label-mini { display: block; font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip { border: 0.5px solid var(--border-strong); background: var(--surface); padding: 6px 11px; border-radius: var(--radius-pill); font-size: 12px; cursor: pointer; user-select: none; line-height: 1.2; min-height: 30px; display: inline-flex; align-items: center; }
+  .chip.selected { background: var(--brand-light); border-color: var(--brand); color: var(--brand-text); font-weight: 500; }
+  .post-block { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px 4px; margin: 10px 0 14px; }
+</style>
+</head>
+<body>
+
+<!-- Login screen -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="brand" style="margin-bottom:18px"><svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-7h6v7"/></svg><span class="brand-name">Mandato</span></div>
+    <h1>Inicia sesión</h1>
+    <p>Ingresa el WhatsApp con el que te registraste. Te enviamos un link mágico.</p>
+    <div class="form-field" id="field-login-phone">
+      <label for="login-phone">WhatsApp</label>
+      <div class="phone-input"><span class="phone-prefix">+57</span><input type="tel" id="login-phone" inputmode="numeric" maxlength="10" placeholder="3001234567"></div>
+      <div class="form-error">Ingresa un celular válido.</div>
+    </div>
+    <button type="button" class="btn btn-primary btn-block" id="login-btn">Buscar mi cuenta</button>
+    <p style="font-size:12px; color:var(--text-faint); text-align:center; margin-top:14px;">¿No tienes cuenta? <a href="signup-comprador.html" style="color:var(--brand)">Crear cuenta</a></p>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app" id="app">
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand"><svg class="brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-7h6v7"/></svg><span class="brand-name">Mandato</span></a>
+      <div class="nav-actions">
+        <span style="font-size:13px; color:var(--text-muted); margin-right:8px;" id="user-name"></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="logout-btn">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap" style="padding-top:24px; padding-bottom:48px;">
+
+    <h1 style="font-size:24px; margin:0 0 6px; font-weight:600; letter-spacing:-0.02em;" id="welcome">Hola</h1>
+    <p style="font-size:14px; color:var(--text-muted); margin:0 0 20px;">Tus mandatos y ofertas, en un solo lugar.</p>
+
+    <!-- Plan banner -->
+    <div id="plan-banner"></div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Plan</div><div class="stat-value" id="stat-plan">—</div></div>
+      <div class="stat-card"><div class="stat-label">Mandatos activos</div><div class="stat-value" id="stat-active">0</div></div>
+      <div class="stat-card"><div class="stat-label">Ofertas recibidas</div><div class="stat-value" id="stat-offers">0</div></div>
+      <div class="stat-card"><div class="stat-label">Vence en</div><div class="stat-value" id="stat-vence">—</div></div>
+    </div>
+
+    <!-- Publicar nuevo mandato -->
+    <div class="section-head">
+      <h2>Publicar nuevo mandato</h2>
+    </div>
+    <div class="composer">
+      <textarea id="post-text" placeholder="Cuéntanos qué buscas en una frase..."></textarea>
+    </div>
+
+    <div class="post-block">
+      <div class="row-mini">
+        <span class="row-label-mini">Tipo</span>
+        <div class="chip-row" data-multi data-key="Tipo">
+          <button type="button" class="chip">Apartamento</button>
+          <button type="button" class="chip">Casa</button>
+          <button type="button" class="chip">Apartaestudio</button>
+          <button type="button" class="chip">Lote</button>
+          <button type="button" class="chip">Local</button>
+        </div>
+      </div>
+      <div class="row-mini">
+        <span class="row-label-mini">Para qué</span>
+        <div class="chip-row" data-single data-key="Para qué">
+          <button type="button" class="chip">Inversión Airbnb</button>
+          <button type="button" class="chip">Renta larga</button>
+          <button type="button" class="chip">Vivir</button>
+          <button type="button" class="chip">Flip</button>
+        </div>
+      </div>
+      <div class="row-mini">
+        <span class="row-label-mini">Zona</span>
+        <div class="chip-row" data-multi data-key="Zona">
+          <button type="button" class="chip">El Poblado</button>
+          <button type="button" class="chip">Laureles</button>
+          <button type="button" class="chip">Envigado</button>
+          <button type="button" class="chip">Sabaneta</button>
+          <button type="button" class="chip">Belén</button>
+        </div>
+      </div>
+      <div class="row-mini">
+        <span class="row-label-mini">Habitaciones</span>
+        <div class="chip-row" data-multi data-key="Habitaciones">
+          <button type="button" class="chip">1</button>
+          <button type="button" class="chip">2</button>
+          <button type="button" class="chip">3</button>
+          <button type="button" class="chip">4+</button>
+        </div>
+      </div>
+      <div class="row-mini">
+        <span class="row-label-mini">Presupuesto</span>
+        <div class="chip-row" data-single data-key="Presupuesto">
+          <button type="button" class="chip">Hasta $200M</button>
+          <button type="button" class="chip">$200 a $400M</button>
+          <button type="button" class="chip">$400 a $600M</button>
+          <button type="button" class="chip">$600M a $1.000M</button>
+          <button type="button" class="chip">$1.000M+</button>
+        </div>
+      </div>
+      <div class="row-mini">
+        <span class="row-label-mini">Forma de pago</span>
+        <div class="chip-row" data-single data-key="Forma de pago">
+          <button type="button" class="chip">Contado</button>
+          <button type="button" class="chip">Crédito hipotecario</button>
+          <button type="button" class="chip">Mixto</button>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-publish">Publicar mandato</button>
+
+    <!-- Mis mandatos -->
+    <div class="section-head" style="margin-top:32px;">
+      <h2>Mis mandatos</h2>
+    </div>
+    <div id="my-mandates"></div>
+
+  </main>
+
+  <footer>
+    <div class="wrap foot-inner">
+      <span class="foot-text">© Mandato 2026</span>
+      <div class="foot-links">
+        <a href="pricing.html">Planes</a>
+        <a href="#">Contacto</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function() {
+  var H = window.MANDATO_HELPERS;
+  var DB = window.MANDATO_DB;
+  var SESSION_KEY = 'mandato_user_session_v1';
+
+  var PLANS = {
+    comprador_free: { nombre: 'Free', precio: 0, max: 1 },
+    comprador_premium: { nombre: 'Premium', precio: 79000, max: 5 }
+  };
+
+  var currentUser = null;
+
+  // ===== Auth =====
+  function getSession() {
+    try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch(e) { return null; }
+  }
+  function setSession(user) {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+  }
+  function clearSession() {
+    sessionStorage.removeItem(SESSION_KEY);
+  }
+
+  function showLogin() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').classList.remove('active');
+  }
+  function showApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('active');
+    renderUser();
+    loadMandates();
+  }
+
+  // Login: buscar por token (si llega por URL) o por teléfono
+  var token = H.getURLParam('token');
+  var demo = H.getURLParam('demo');
+
+  function loginByToken(t) {
+    if (!DB.isConfigured()) {
+      // Modo demo
+      var stored = localStorage.getItem('mandato_demo_user');
+      if (stored) {
+        currentUser = JSON.parse(stored);
+        setSession(currentUser);
+        showApp();
+        return;
+      }
+      showLogin();
+      return;
+    }
+    DB.select('usuarios', 'client_token=eq.' + encodeURIComponent(t)).then(function(rows) {
+      if (rows && rows[0]) {
+        currentUser = rows[0];
+        setSession(currentUser);
+        showApp();
+      } else {
+        H.showToast('Link inválido. Inicia sesión.');
+        showLogin();
+      }
+    }).catch(function() { showLogin(); });
+  }
+
+  function loginByPhone(phone) {
+    if (!DB.isConfigured()) {
+      var stored = localStorage.getItem('mandato_demo_user');
+      if (stored) {
+        var u = JSON.parse(stored);
+        if (u.phone === phone || u.telefono === phone) {
+          currentUser = u; setSession(u); showApp(); return;
+        }
+      }
+      H.showToast('No encontramos esa cuenta');
+      return;
+    }
+    DB.select('usuarios', 'telefono=eq.' + encodeURIComponent(phone)).then(function(rows) {
+      if (rows && rows[0]) {
+        currentUser = rows[0];
+        setSession(currentUser);
+        showApp();
+      } else {
+        H.showToast('No encontramos esa cuenta. ¿Quieres crearla?');
+        setTimeout(function() { window.location.href = 'signup-comprador.html'; }, 1500);
+      }
+    }).catch(function(e) { console.error(e); H.showToast('Error: ' + e.message); });
+  }
+
+  if (token) {
+    loginByToken(token);
+  } else if (demo) {
+    var d = localStorage.getItem('mandato_demo_user');
+    if (d) { currentUser = JSON.parse(d); setSession(currentUser); showApp(); } else showLogin();
+  } else {
+    var s = getSession();
+    if (s) { currentUser = s; showApp(); } else showLogin();
+  }
+
+  document.getElementById('login-btn').addEventListener('click', function() {
+    var phone = document.getElementById('login-phone').value.trim();
+    if (!/^3\d{9}$/.test(phone)) {
+      document.getElementById('field-login-phone').classList.add('has-error');
+      return;
+    }
+    loginByPhone(phone);
+  });
+  document.getElementById('login-phone').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', function() {
+    clearSession();
+    window.location.reload();
+  });
+
+  // ===== Render user state =====
+  function renderUser() {
+    var name = currentUser.nombre || currentUser.name || 'Inversionista';
+    var planId = currentUser.plan_id || currentUser.planId || 'comprador_free';
+    var plan = PLANS[planId] || PLANS.comprador_free;
+    document.getElementById('user-name').textContent = name.split(' ')[0];
+    document.getElementById('welcome').textContent = 'Hola, ' + name.split(' ')[0];
+    document.getElementById('stat-plan').textContent = plan.nombre;
+
+    var venceAt = currentUser.plan_vence_at;
+    if (venceAt) {
+      document.getElementById('stat-vence').textContent = H.daysUntil(venceAt) + ' días';
+    } else {
+      document.getElementById('stat-vence').textContent = plan.precio === 0 ? '—' : '—';
+    }
+
+    var banner = document.getElementById('plan-banner');
+    if (planId === 'comprador_free') {
+      banner.className = 'plan-banner brand';
+      banner.innerHTML = '<div>Estás en plan <strong>Free</strong>. Sube a Premium para 5 mandatos simultáneos y ofertas off-market.</div>' +
+        '<div class="plan-banner-actions"><a href="pricing.html" class="btn btn-primary btn-sm">Ver Premium</a></div>';
+    } else {
+      banner.className = 'plan-banner';
+      banner.innerHTML = '<div>Plan <strong>Premium</strong> activo. Vence en ' + H.daysUntil(venceAt) + ' días.</div>' +
+        '<div class="plan-banner-actions"><a href="pricing.html" class="btn btn-sm">Gestionar</a></div>';
+    }
+  }
+
+  // ===== Load mandates =====
+  function loadMandates() {
+    if (!DB.isConfigured()) {
+      var local = JSON.parse(localStorage.getItem('mandato_demo_mandates') || '[]');
+      renderMandates(local);
+      return;
+    }
+    DB.select('mandatos', 'usuario_id=eq.' + encodeURIComponent(currentUser.id) + '&order=created_at.desc')
+      .then(function(rows) { renderMandates(rows || []); })
+      .catch(function(e) { console.error(e); renderMandates([]); });
+  }
+
+  function renderMandates(mandates) {
+    var active = mandates.filter(function(m){return m.status === 'active';}).length;
+    document.getElementById('stat-active').textContent = active;
+    document.getElementById('stat-offers').textContent = mandates.reduce(function(sum, m){return sum + (m.ofertas_count || 0);}, 0);
+
+    var container = document.getElementById('my-mandates');
+    if (mandates.length === 0) {
+      container.innerHTML = '<div class="empty"><h3>Aún no has publicado mandatos</h3><p>Usa el formulario arriba para publicar el primero. Recibirás ofertas en menos de 48 horas.</p></div>';
+      return;
+    }
+    container.innerHTML = mandates.map(function(m) {
+      var statusBadge = {
+        active: '<span class="badge badge-brand">activo</span>',
+        paused: '<span class="badge badge-warning">pausado</span>',
+        closed: '<span class="badge badge-info">cerrado</span>',
+        expired: '<span class="badge badge-danger">expirado</span>'
+      }[m.status] || '';
+      return '<div class="mandate-card">' +
+        '<div class="mandate-card-head">' +
+          '<div style="font-size:11px; color:var(--text-faint); font-family:monospace;">' + H.escapeHtml(m.id) + '</div>' +
+          statusBadge +
+        '</div>' +
+        '<div class="mandate-card-text">' + H.escapeHtml(m.free_text || 'Sin descripción') + '</div>' +
+        '<div class="mandate-card-meta">' +
+          '<span>' + H.timeAgo(m.created_at) + ' · ' + (m.ofertas_count || 0) + ' oferta' + ((m.ofertas_count || 0) !== 1 ? 's' : '') + '</span>' +
+          (m.vence_at ? '<span>vence en ' + H.daysUntil(m.vence_at) + ' días</span>' : '') +
+        '</div>' +
+        '<div class="mandate-actions">' +
+          '<button type="button" class="btn btn-sm" data-view="' + H.escapeHtml(m.id) + '">Ver ofertas</button>' +
+          (m.status === 'active' ? '<button type="button" class="btn btn-sm" data-pause="' + H.escapeHtml(m.id) + '">Pausar</button>' : '') +
+          (m.status === 'paused' ? '<button type="button" class="btn btn-sm" data-resume="' + H.escapeHtml(m.id) + '">Reactivar</button>' : '') +
+        '</div>' +
+        '<div id="offers-' + H.escapeHtml(m.id) + '"></div>' +
+      '</div>';
+    }).join('');
+
+    // Bind actions
+    container.querySelectorAll('[data-view]').forEach(function(b) {
+      b.addEventListener('click', function() { loadOffers(b.getAttribute('data-view')); });
+    });
+    container.querySelectorAll('[data-pause]').forEach(function(b) {
+      b.addEventListener('click', function() { changeMandateStatus(b.getAttribute('data-pause'), 'paused'); });
+    });
+    container.querySelectorAll('[data-resume]').forEach(function(b) {
+      b.addEventListener('click', function() { changeMandateStatus(b.getAttribute('data-resume'), 'active'); });
+    });
+  }
+
+  function loadOffers(mandateId) {
+    var slot = document.getElementById('offers-' + mandateId);
+    if (!slot) return;
+    if (slot.dataset.loaded) { slot.innerHTML = ''; delete slot.dataset.loaded; return; }
+    slot.dataset.loaded = '1';
+
+    if (!DB.isConfigured()) {
+      slot.innerHTML = '<div class="offers-list"><div class="offer"><div class="offer-head"><div><div class="offer-name">Apto 401 · Manila Living</div><div class="offer-loc">Manila, El Poblado · Estrato 6</div></div><div class="offer-price">$420.000.000</div></div><div class="offer-why">Off-market. Cap rate 9.8%. Demo.</div></div></div>';
+      return;
+    }
+    DB.select('ofertas', 'mandate_id=eq.' + encodeURIComponent(mandateId) + '&order=created_at.desc').then(function(offers) {
+      if (!offers || offers.length === 0) {
+        slot.innerHTML = '<div class="offers-list" style="color:var(--text-faint); font-size:13px; padding:8px 0;"><em>Aún no llegan ofertas. Te avisaremos por WhatsApp apenas tengamos opciones.</em></div>';
+        return;
+      }
+      slot.innerHTML = '<div class="offers-list">' + offers.map(function(o) {
+        return '<div class="offer">' +
+          '<div class="offer-head">' +
+            '<div><div class="offer-name">' + H.escapeHtml(o.name) + '</div>' +
+            (o.location ? '<div class="offer-loc">' + H.escapeHtml(o.location) + '</div>' : '') + '</div>' +
+            '<div class="offer-price">' + H.formatCOP(o.price) + '</div>' +
+          '</div>' +
+          (o.why ? '<div class="offer-why">' + H.escapeHtml(o.why) + '</div>' : '') +
+        '</div>';
+      }).join('') + '</div>';
+    });
+  }
+
+  function changeMandateStatus(id, status) {
+    if (!DB.isConfigured()) {
+      var local = JSON.parse(localStorage.getItem('mandato_demo_mandates') || '[]');
+      local = local.map(function(m){ if (m.id === id) m.status = status; return m; });
+      localStorage.setItem('mandato_demo_mandates', JSON.stringify(local));
+      loadMandates();
+      return;
+    }
+    DB.update('mandatos', id, { status: status }).then(function() {
+      H.showToast('Mandato actualizado');
+      loadMandates();
+    });
+  }
+
+  // ===== Chips =====
+  document.querySelectorAll('.chip-row[data-single]').forEach(function(row) {
+    row.querySelectorAll('.chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        row.querySelectorAll('.chip').forEach(function(c){c.classList.remove('selected');});
+        chip.classList.add('selected');
+      });
+    });
+  });
+  document.querySelectorAll('.chip-row[data-multi]').forEach(function(row) {
+    row.querySelectorAll('.chip').forEach(function(chip) {
+      chip.addEventListener('click', function() { chip.classList.toggle('selected'); });
+    });
+  });
+
+  // ===== Publicar =====
+  document.getElementById('btn-publish').addEventListener('click', function() {
+    var text = document.getElementById('post-text').value.trim();
+    if (text.length < 20) {
+      H.showToast('Cuéntanos un poco más (mínimo 20 caracteres)');
+      document.getElementById('post-text').focus();
+      return;
+    }
+
+    var planId = currentUser.plan_id || currentUser.planId || 'comprador_free';
+    var plan = PLANS[planId] || PLANS.comprador_free;
+
+    var fields = {};
+    document.querySelectorAll('.chip-row[data-key]').forEach(function(row) {
+      var k = row.getAttribute('data-key');
+      var sel = Array.from(row.querySelectorAll('.chip.selected')).map(function(c){return c.textContent.trim();});
+      if (sel.length > 0) fields[k] = sel.join(', ');
+    });
+
+    var venceAt = new Date(Date.now() + (planId === 'comprador_premium' ? 30 : 15) * 24 * 3600 * 1000).toISOString();
+
+    var newMandate = {
+      id: H.uid('m'),
+      vence_at: venceAt,
+      status: 'active',
+      usuario_id: currentUser.id,
+      contact_name: currentUser.nombre || currentUser.name,
+      contact_phone: currentUser.telefono || currentUser.phone,
+      contact_email: currentUser.email,
+      free_text: text,
+      fields: fields
+    };
+
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Publicando...';
+
+    var done = function() {
+      H.showToast('¡Mandato publicado! Te avisaremos por WhatsApp');
+      document.getElementById('post-text').value = '';
+      document.querySelectorAll('.chip.selected').forEach(function(c){c.classList.remove('selected');});
+      btn.disabled = false;
+      btn.textContent = 'Publicar mandato';
+      loadMandates();
+
+      // Notificar al equipo
+      var msg = 'Hola Mandato, publiqué un nuevo mandato:\n\n' + text +
+        '\n\nMandato ID: ' + newMandate.id;
+      window.open('https://wa.me/' + window.MANDATO_CONFIG.WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
+    };
+
+    if (!DB.isConfigured()) {
+      var local = JSON.parse(localStorage.getItem('mandato_demo_mandates') || '[]');
+      newMandate.created_at = new Date().toISOString();
+      newMandate.ofertas_count = 0;
+      local.unshift(newMandate);
+      localStorage.setItem('mandato_demo_mandates', JSON.stringify(local));
+      done();
+      return;
+    }
+
+    // Verificar límite de mandatos activos según plan
+    DB.select('mandatos', 'usuario_id=eq.' + encodeURIComponent(currentUser.id) + '&status=eq.active').then(function(rows) {
+      if (rows && rows.length >= plan.max) {
+        H.showToast('Llegaste al límite de mandatos activos. Sube a Premium para más.');
+        btn.disabled = false;
+        btn.textContent = 'Publicar mandato';
+        setTimeout(function(){ window.location.href = 'pricing.html'; }, 2000);
+        return;
+      }
+      DB.insert('mandatos', newMandate).then(done).catch(function(e) {
+        console.error(e); H.showToast('Error: ' + e.message);
+        btn.disabled = false;
+        btn.textContent = 'Publicar mandato';
+      });
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F6E56">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Mandato</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .login-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 32px 28px; max-width: 380px; width: 100%; box-shadow: var(--shadow-md); }
+  .login-card h1 { font-size: 20px; margin: 0 0 6px; font-weight: 600; }
+  .login-card p { font-size: 13px; color: var(--text-muted); margin: 0 0 20px; }
+  .app { display: none; }
+  .app.active { display: block; }
+  .topbar-tag { font-size: 10px; padding: 2px 8px; background: var(--brand-light); color: var(--brand-text); border-radius: 999px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-left: 6px; }
+  .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+  @media (min-width: 720px) { .stats-row { grid-template-columns: repeat(5, 1fr); } }
+  .stat-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; }
+  .stat-label { font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; }
+  .stat-value { font-size: 22px; font-weight: 600; margin-top: 2px; letter-spacing: -0.02em; }
+  .stat-sub { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+  .tabs { display: flex; gap: 4px; margin: 24px 0 18px; border-bottom: 0.5px solid var(--border); padding-bottom: 0; overflow-x: auto; }
+  .tab { padding: 10px 16px; border: none; background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; }
+  .tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .filter-bar { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-pill { padding: 7px 13px; border-radius: 999px; border: 0.5px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 13px; white-space: nowrap; flex-shrink: 0; }
+  .filter-pill.active { background: var(--brand); border-color: var(--brand); color: white; font-weight: 500; }
+  .item { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s; }
+  .item:hover { border-color: var(--brand); }
+  .item-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .item-meta { font-size: 11px; color: var(--text-faint); font-family: monospace; }
+  .item-title { font-size: 14px; font-weight: 500; }
+  .item-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 6px 0; }
+  .item-foot { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 11px; color: var(--text-faint); }
+  .empty { background: var(--surface); border: 0.5px dashed var(--border-strong); border-radius: var(--radius-lg); padding: 50px 24px; text-align: center; color: var(--text-muted); }
+  .empty h3 { font-size: 16px; color: var(--text); margin: 0 0 6px; font-weight: 500; }
+  .empty p { font-size: 13px; max-width: 360px; line-height: 1.6; margin: 0 auto; }
+  .modal { max-width: 640px; }
+  .modal-header { padding-bottom: 12px; border-bottom: 0.5px solid var(--border); margin-bottom: 14px; }
+  .modal-header h2 { font-size: 18px; margin: 0 0 4px; font-weight: 600; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .detail-item { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; }
+  .detail-item-key { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+  .detail-item-value { font-size: 13px; margin-top: 2px; }
+  .contact-card { background: var(--brand-light); border-radius: var(--radius-md); padding: 12px 14px; margin: 12px 0; }
+  .contact-card div { font-size: 13px; color: var(--brand-text); margin-bottom: 4px; }
+  .contact-card div:last-child { margin-bottom: 0; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--border); flex-wrap: wrap; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 12px 20px; border-radius: var(--radius-md); font-size: 13px; opacity: 0; transition: opacity 0.3s; z-index: 200; }
+  .toast.show { opacity: 1; }
+  .setup-banner { background: var(--warning-light); border: 0.5px solid var(--warning); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px; font-size: 13px; color: var(--warning); }
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="brand" style="margin-bottom:18px"><svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-7h6v7"/></svg><span class="brand-name">Mandato</span><span class="topbar-tag">admin</span></div>
+    <h1>Acceso administrador</h1>
+    <p>Esta área es solo para el equipo Mandato.</p>
+    <div class="form-field">
+      <label for="login-password">Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <button type="button" class="btn btn-primary btn-block" id="login-btn">Ingresar</button>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app" id="app">
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand"><svg class="brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-7h6v7"/></svg><span class="brand-name">Mandato</span><span class="topbar-tag">admin</span></a>
+      <div class="nav-actions">
+        <span style="font-size:11px; color:var(--text-faint);" id="storage-mode">modo: local</span>
+        <button type="button" class="btn btn-ghost btn-sm" id="logout-btn">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap-wide" style="padding-top:24px; padding-bottom:48px;">
+
+    <h1 style="font-size:24px; margin:0 0 6px; font-weight:600; letter-spacing:-0.02em;">Dashboard</h1>
+    <p style="font-size:14px; color:var(--text-muted); margin:0 0 20px;">Operaciones, ingresos y gestión de la plataforma.</p>
+
+    <div id="setup-banner-slot"></div>
+
+    <!-- Métricas globales -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">MRR</div>
+        <div class="stat-value" id="stat-mrr">$0</div>
+        <div class="stat-sub">ingreso mensual recurrente</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Compradores</div>
+        <div class="stat-value" id="stat-users">0</div>
+        <div class="stat-sub" id="stat-users-sub">0 premium</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Brokers activos</div>
+        <div class="stat-value" id="stat-brokers">0</div>
+        <div class="stat-sub" id="stat-brokers-sub">0 pro+</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Mandatos activos</div>
+        <div class="stat-value" id="stat-mandatos">0</div>
+        <div class="stat-sub" id="stat-mandatos-sub">0 nuevos hoy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pagos del mes</div>
+        <div class="stat-value" id="stat-pagos">$0</div>
+        <div class="stat-sub" id="stat-pagos-sub">0 transacciones</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="mandatos">Mandatos</button>
+      <button type="button" class="tab" data-tab="usuarios">Compradores</button>
+      <button type="button" class="tab" data-tab="brokers">Brokers</button>
+      <button type="button" class="tab" data-tab="pagos">Pagos</button>
+      <button type="button" class="tab" data-tab="suscripciones">Suscripciones</button>
+    </div>
+
+    <!-- Tab: Mandatos -->
+    <div class="tab-content active" id="tab-mandatos">
+      <div class="filter-bar">
+        <button type="button" class="filter-pill active" data-mfilter="all">Todos</button>
+        <button type="button" class="filter-pill" data-mfilter="active">Activos</button>
+        <button type="button" class="filter-pill" data-mfilter="paused">Pausados</button>
+        <button type="button" class="filter-pill" data-mfilter="closed">Cerrados</button>
+        <button type="button" class="filter-pill" data-mfilter="expired">Expirados</button>
+      </div>
+      <div id="mandates-list"></div>
+    </div>
+
+    <!-- Tab: Usuarios -->
+    <div class="tab-content" id="tab-usuarios">
+      <div id="users-list"></div>
+    </div>
+
+    <!-- Tab: Brokers -->
+    <div class="tab-content" id="tab-brokers">
+      <div id="brokers-list"></div>
+    </div>
+
+    <!-- Tab: Pagos -->
+    <div class="tab-content" id="tab-pagos">
+      <div id="pagos-list"></div>
+    </div>
+
+    <!-- Tab: Suscripciones -->
+    <div class="tab-content" id="tab-suscripciones">
+      <div id="subs-list"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal detalle mandato -->
+<div class="modal-backdrop" id="mandate-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="md-name">Mandato</h2>
+      <div id="md-meta" style="font-size:11px; color:var(--text-faint);"></div>
+    </div>
+    <div id="md-body"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-sm" id="md-close">Cerrar</button>
+      <button type="button" class="btn btn-whatsapp btn-sm" id="md-whatsapp">WhatsApp</button>
+      <select class="btn btn-sm" id="md-status" style="padding-right:30px">
+        <option value="active">Activo</option>
+        <option value="paused">Pausado</option>
+        <option value="closed">Cerrado</option>
+        <option value="expired">Expirado</option>
+      </select>
+      <button type="button" class="btn btn-primary btn-sm" id="md-add-offer" style="margin-left:auto">+ Enviar oferta</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nueva oferta -->
+<div class="modal-backdrop" id="offer-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header"><h2>Nueva oferta</h2></div>
+    <div class="form-field"><label>Nombre del inmueble</label><input type="text" id="of-name" placeholder="Apto 401 · Edificio Manila Living"></div>
+    <div class="form-field"><label>Ubicación</label><input type="text" id="of-location" placeholder="Manila, El Poblado · Estrato 6"></div>
+    <div class="form-row">
+      <div class="form-field"><label>Precio COP</label><input type="text" id="of-price" inputmode="numeric" placeholder="420.000.000"></div>
+      <div class="form-field"><label>Área m²</label><input type="text" id="of-area" inputmode="numeric"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Habitaciones</label><input type="text" id="of-rooms"></div>
+      <div class="form-field"><label>Baños</label><input type="text" id="of-baths"></div>
+    </div>
+    <div class="form-field"><label>Por qué hace match</label><textarea id="of-why" placeholder="Off-market. Cap rate 9.8%..."></textarea></div>
+    <div class="form-field"><label>Link <span class="optional">(opcional)</span></label><input type="url" id="of-link"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-sm" id="of-cancel">Cancelar</button>
+      <button type="button" class="btn btn-primary btn-sm" id="of-submit" style="margin-left:auto">Guardar y notificar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+(function() {
+  var H = window.MANDATO_HELPERS;
+  var DB = window.MANDATO_DB;
+  var SESSION_KEY = 'mandato_admin_session_v1';
+
+  var allMandates = [], allUsers = [], allBrokers = [], allPagos = [], allSubs = [];
+  var currentMandate = null;
+  var currentMFilter = 'all';
+
+  // ===== Auth =====
+  function checkAuth() {
+    return sessionStorage.getItem(SESSION_KEY) === 'authenticated';
+  }
+  function showApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('active');
+    if (!DB.isConfigured()) {
+      document.getElementById('storage-mode').textContent = 'modo: local (demo)';
+      document.getElementById('setup-banner-slot').innerHTML = '<div class="setup-banner">⚠️ <strong>Supabase no configurado.</strong> Estás en modo demo con datos de ejemplo. Edita <code>config.js</code> y pega tu URL y anon key para conectar la base de datos real.</div>';
+      seedDemoData();
+    } else {
+      document.getElementById('storage-mode').textContent = 'modo: supabase';
+    }
+    refreshAll();
+  }
+  function showLogin() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').classList.remove('active');
+  }
+
+  document.getElementById('login-btn').addEventListener('click', function() {
+    var pw = document.getElementById('login-password').value;
+    if (pw === window.MANDATO_CONFIG.ADMIN_PASSWORD) {
+      sessionStorage.setItem(SESSION_KEY, 'authenticated');
+      showApp();
+    } else { showToast('Contraseña incorrecta'); }
+  });
+  document.getElementById('login-password').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('login-btn').click();
+  });
+  document.getElementById('logout-btn').addEventListener('click', function() {
+    sessionStorage.removeItem(SESSION_KEY); window.location.reload();
+  });
+
+  // ===== Demo data =====
+  function seedDemoData() {
+    if (allMandates.length > 0) return;
+    var now = Date.now();
+    allMandates = [
+      { id: 'm_demo_1', created_at: new Date(now - 6*3600*1000).toISOString(), vence_at: new Date(now + 24*86400*1000).toISOString(), status: 'active', usuario_id: 'u_demo_1', contact_name: 'Juan Pérez', contact_phone: '3001234567', contact_email: 'juan@ejemplo.com', free_text: 'Apto 2 hab en El Poblado o Laureles para Airbnb hasta $450M, contado, 1-3 meses.', fields: { 'Tipo': 'Apartamento', 'Zona': 'El Poblado, Laureles', 'Habitaciones': '2', 'Forma de pago': 'Contado' }, ofertas_count: 3 },
+      { id: 'm_demo_2', created_at: new Date(now - 2*86400*1000).toISOString(), vence_at: new Date(now + 28*86400*1000).toISOString(), status: 'active', usuario_id: 'u_demo_2', contact_name: 'María Restrepo', contact_phone: '3109876543', free_text: 'Casa familiar Envigado, 3 hab, hasta $900M, crédito.', fields: { 'Tipo': 'Casa', 'Zona': 'Envigado' }, ofertas_count: 2 },
+      { id: 'm_demo_3', created_at: new Date(now - 86400*1000).toISOString(), vence_at: new Date(now + 14*86400*1000).toISOString(), status: 'active', usuario_id: 'u_demo_3', contact_name: 'Andrés Foreign', contact_phone: '3145556677', free_text: 'Apartaestudio en Provenza para flip, hasta $280M, contado.', fields: { 'Tipo': 'Apartaestudio', 'Forma de pago': 'Contado' }, ofertas_count: 0 }
+    ];
+    allUsers = [
+      { id: 'u_demo_1', nombre: 'Juan Pérez', telefono: '3001234567', email: 'juan@ejemplo.com', plan_id: 'comprador_premium', plan_vence_at: new Date(now + 24*86400*1000).toISOString(), created_at: new Date(now - 7*86400*1000).toISOString() },
+      { id: 'u_demo_2', nombre: 'María Restrepo', telefono: '3109876543', email: 'maria@gmail.com', plan_id: 'comprador_free', created_at: new Date(now - 3*86400*1000).toISOString() },
+      { id: 'u_demo_3', nombre: 'Andrés Foreign', telefono: '3145556677', email: 'andres@gmail.com', plan_id: 'comprador_free', created_at: new Date(now - 86400*1000).toISOString() }
+    ];
+    allBrokers = [
+      { id: 'br_demo_1', nombre: 'Carolina Restrepo', telefono: '3201112233', email: 'caro@inmob.co', empresa: 'Independiente', plan_id: 'broker_pro', plan_vence_at: new Date(now + 20*86400*1000).toISOString(), activo: true, ciudades: ['Medellín'], created_at: new Date(now - 30*86400*1000).toISOString() },
+      { id: 'br_demo_2', nombre: 'Juan Marín', telefono: '3105556677', email: 'juan@brokers.co', plan_id: 'broker_basico', plan_vence_at: new Date(now + 15*86400*1000).toISOString(), activo: true, ciudades: ['Medellín'], created_at: new Date(now - 60*86400*1000).toISOString() },
+      { id: 'br_demo_3', nombre: 'Andrés Salazar', telefono: '3009998877', email: 'andres@elite.co', empresa: 'Élite Realty', plan_id: 'broker_elite', plan_vence_at: new Date(now + 5*86400*1000).toISOString(), activo: true, ciudades: ['Medellín', 'Bogotá', 'Cali'], created_at: new Date(now - 90*86400*1000).toISOString() }
+    ];
+    allSubs = [
+      { id: 'sub_1', usuario_id: 'u_demo_1', plan_id: 'comprador_premium', estado: 'active', monto: 79000, inicio_at: new Date(now - 6*86400*1000).toISOString(), fin_at: new Date(now + 24*86400*1000).toISOString() },
+      { id: 'sub_2', broker_id: 'br_demo_1', plan_id: 'broker_pro', estado: 'active', monto: 349000, inicio_at: new Date(now - 10*86400*1000).toISOString(), fin_at: new Date(now + 20*86400*1000).toISOString() },
+      { id: 'sub_3', broker_id: 'br_demo_2', plan_id: 'broker_basico', estado: 'active', monto: 149000, inicio_at: new Date(now - 15*86400*1000).toISOString(), fin_at: new Date(now + 15*86400*1000).toISOString() },
+      { id: 'sub_4', broker_id: 'br_demo_3', plan_id: 'broker_elite', estado: 'active', monto: 799000, inicio_at: new Date(now - 25*86400*1000).toISOString(), fin_at: new Date(now + 5*86400*1000).toISOString() }
+    ];
+    allPagos = [
+      { id: 'pay_1', created_at: new Date(now - 6*86400*1000).toISOString(), monto: 79000, estado: 'approved', metodo_pago: 'CARD', usuario_id: 'u_demo_1', payer_email: 'juan@ejemplo.com', wompi_reference: 'mandato_1730000001' },
+      { id: 'pay_2', created_at: new Date(now - 10*86400*1000).toISOString(), monto: 349000, estado: 'approved', metodo_pago: 'PSE', broker_id: 'br_demo_1', payer_email: 'caro@inmob.co', wompi_reference: 'mandato_br_1730000002' },
+      { id: 'pay_3', created_at: new Date(now - 15*86400*1000).toISOString(), monto: 149000, estado: 'approved', metodo_pago: 'NEQUI', broker_id: 'br_demo_2', payer_email: 'juan@brokers.co', wompi_reference: 'mandato_br_1730000003' },
+      { id: 'pay_4', created_at: new Date(now - 25*86400*1000).toISOString(), monto: 799000, estado: 'approved', metodo_pago: 'BANCOLOMBIA_TRANSFER', broker_id: 'br_demo_3', payer_email: 'andres@elite.co', wompi_reference: 'mandato_br_1730000004' }
+    ];
+  }
+
+  // ===== Refresh data =====
+  function refreshAll() {
+    if (!DB.isConfigured()) {
+      renderStats(); renderMandates(); renderUsers(); renderBrokers(); renderPagos(); renderSubs();
+      return;
+    }
+    Promise.all([
+      DB.select('mandatos', 'order=created_at.desc&limit=200'),
+      DB.select('usuarios', 'order=created_at.desc&limit=200'),
+      DB.select('brokers', 'order=created_at.desc&limit=200'),
+      DB.select('pagos', 'order=created_at.desc&limit=200'),
+      DB.select('suscripciones', 'order=created_at.desc&limit=200')
+    ]).then(function(results) {
+      allMandates = results[0] || [];
+      allUsers = results[1] || [];
+      allBrokers = results[2] || [];
+      allPagos = results[3] || [];
+      allSubs = results[4] || [];
+      renderStats(); renderMandates(); renderUsers(); renderBrokers(); renderPagos(); renderSubs();
+    }).catch(function(e) {
+      console.error(e); showToast('Error cargando datos: ' + e.message);
+    });
+  }
+
+  function renderStats() {
+    // MRR: suma de todas las suscripciones activas mensuales
+    var mrr = allSubs.filter(function(s){return s.estado === 'active';})
+      .reduce(function(sum, s){return sum + (s.monto || 0);}, 0);
+    document.getElementById('stat-mrr').textContent = H.formatCOP(mrr);
+
+    // Usuarios
+    document.getElementById('stat-users').textContent = allUsers.length;
+    var premium = allUsers.filter(function(u){return u.plan_id === 'comprador_premium';}).length;
+    document.getElementById('stat-users-sub').textContent = premium + ' premium';
+
+    // Brokers activos
+    var brokersActivos = allBrokers.filter(function(b){return b.activo !== false;}).length;
+    document.getElementById('stat-brokers').textContent = brokersActivos;
+    var pro = allBrokers.filter(function(b){return b.plan_id === 'broker_pro' || b.plan_id === 'broker_elite';}).length;
+    document.getElementById('stat-brokers-sub').textContent = pro + ' pro+';
+
+    // Mandatos activos
+    var mandActivos = allMandates.filter(function(m){return m.status === 'active';}).length;
+    document.getElementById('stat-mandatos').textContent = mandActivos;
+    var hoy = new Date(); hoy.setHours(0,0,0,0);
+    var nuevosHoy = allMandates.filter(function(m){return new Date(m.created_at) >= hoy;}).length;
+    document.getElementById('stat-mandatos-sub').textContent = nuevosHoy + ' nuevos hoy';
+
+    // Pagos del mes
+    var inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
+    var pagosDelMes = allPagos.filter(function(p){
+      return p.estado === 'approved' && new Date(p.created_at) >= inicioMes;
+    });
+    var montoMes = pagosDelMes.reduce(function(sum, p){return sum + (p.monto || 0);}, 0);
+    document.getElementById('stat-pagos').textContent = H.formatCOP(montoMes);
+    document.getElementById('stat-pagos-sub').textContent = pagosDelMes.length + ' transacciones';
+  }
+
+  // ===== Tabs =====
+  document.querySelectorAll('.tab').forEach(function(t) {
+    t.addEventListener('click', function() {
+      document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});
+      document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active');});
+      t.classList.add('active');
+      document.getElementById('tab-' + t.getAttribute('data-tab')).classList.add('active');
+    });
+  });
+
+  // ===== Filter mandatos =====
+  document.querySelectorAll('[data-mfilter]').forEach(function(p) {
+    p.addEventListener('click', function() {
+      document.querySelectorAll('[data-mfilter]').forEach(function(x){x.classList.remove('active');});
+      p.classList.add('active');
+      currentMFilter = p.getAttribute('data-mfilter');
+      renderMandates();
+    });
+  });
+
+  function renderMandates() {
+    var list = currentMFilter === 'all' ? allMandates : allMandates.filter(function(m){return m.status === currentMFilter;});
+    var el = document.getElementById('mandates-list');
+    if (list.length === 0) {
+      el.innerHTML = '<div class="empty"><h3>Sin mandatos en esta vista</h3><p>Cuando los compradores publiquen, aparecerán aquí.</p></div>';
+      return;
+    }
+    el.innerHTML = list.map(function(m) {
+      var statusBadge = {active:'badge-brand', paused:'badge-warning', closed:'badge-info', expired:'badge-danger'}[m.status] || '';
+      return '<div class="item" data-id="' + H.escapeHtml(m.id) + '" data-type="mandate">' +
+        '<div class="item-head">' +
+          '<div><span class="item-meta">' + H.escapeHtml(m.id) + '</span> · <span class="item-title">' + H.escapeHtml(m.contact_name || '') + '</span></div>' +
+          '<span class="badge ' + statusBadge + '">' + m.status + '</span>' +
+        '</div>' +
+        '<div class="item-text">' + H.escapeHtml((m.free_text || '').slice(0, 200)) + '</div>' +
+        '<div class="item-foot"><span>' + H.timeAgo(m.created_at) + ' · +57 ' + H.escapeHtml(m.contact_phone) + '</span><span>' + (m.ofertas_count || 0) + ' ofertas</span></div>' +
+      '</div>';
+    }).join('');
+    el.querySelectorAll('.item').forEach(function(c) {
+      c.addEventListener('click', function(){ openMandateDetail(c.getAttribute('data-id')); });
+    });
+  }
+
+  function renderUsers() {
+    var el = document.getElementById('users-list');
+    if (allUsers.length === 0) {
+      el.innerHTML = '<div class="empty"><h3>Sin compradores aún</h3><p>Los compradores que se registren aparecerán aquí.</p></div>';
+      return;
+    }
+    el.innerHTML = allUsers.map(function(u) {
+      var planBadge = u.plan_id === 'comprador_premium' ? '<span class="badge badge-brand">Premium</span>' : '<span class="badge">Free</span>';
+      return '<div class="item">' +
+        '<div class="item-head">' +
+          '<div><span class="item-title">' + H.escapeHtml(u.nombre) + '</span></div>' +
+          planBadge +
+        '</div>' +
+        '<div class="item-foot"><span>+57 ' + H.escapeHtml(u.telefono) + ' · ' + H.escapeHtml(u.email || '') + '</span><span>' + H.timeAgo(u.created_at) + '</span></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderBrokers() {
+    var el = document.getElementById('brokers-list');
+    if (allBrokers.length === 0) {
+      el.innerHTML = '<div class="empty"><h3>Sin brokers afiliados</h3><p>Los brokers que se registren aparecerán aquí.</p></div>';
+      return;
+    }
+    el.innerHTML = allBrokers.map(function(b) {
+      var planLabel = {broker_basico:'Básico', broker_pro:'Pro', broker_elite:'Élite'}[b.plan_id] || '?';
+      var planBadgeClass = b.plan_id === 'broker_elite' ? 'badge-gold' : (b.plan_id === 'broker_pro' ? 'badge-brand' : 'badge-info');
+      var activoLabel = b.activo === false ? '<span class="badge badge-danger">inactivo</span>' : '';
+      return '<div class="item">' +
+        '<div class="item-head">' +
+          '<div><span class="item-title">' + H.escapeHtml(b.nombre) + '</span>' + (b.empresa ? ' <span style="color:var(--text-faint); font-size:12px;">· ' + H.escapeHtml(b.empresa) + '</span>' : '') + '</div>' +
+          '<div style="display:flex; gap:4px;"><span class="badge ' + planBadgeClass + '">' + planLabel + '</span>' + activoLabel + '</div>' +
+        '</div>' +
+        '<div class="item-foot"><span>+57 ' + H.escapeHtml(b.telefono) + ' · ' + H.escapeHtml(b.email || '') + '</span><span>vence en ' + (b.plan_vence_at ? H.daysUntil(b.plan_vence_at) + ' días' : '—') + '</span></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderPagos() {
+    var el = document.getElementById('pagos-list');
+    if (allPagos.length === 0) {
+      el.innerHTML = '<div class="empty"><h3>Sin pagos registrados</h3><p>Los pagos exitosos y rechazados aparecerán aquí.</p></div>';
+      return;
+    }
+    el.innerHTML = allPagos.map(function(p) {
+      var estadoBadge = {approved:'badge-brand', pending:'badge-warning', declined:'badge-danger', voided:'badge-info', error:'badge-danger'}[p.estado] || '';
+      return '<div class="item">' +
+        '<div class="item-head">' +
+          '<div><span class="item-title">' + H.formatCOP(p.monto) + '</span> <span style="color:var(--text-faint); font-size:12px;">· ' + H.escapeHtml(p.metodo_pago || '?') + '</span></div>' +
+          '<span class="badge ' + estadoBadge + '">' + p.estado + '</span>' +
+        '</div>' +
+        '<div class="item-foot"><span>' + H.escapeHtml(p.payer_email || '') + ' · ref: ' + H.escapeHtml(p.wompi_reference || '?') + '</span><span>' + H.timeAgo(p.created_at) + '</span></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderSubs() {
+    var el = document.getElementById('subs-list');
+    if (allSubs.length === 0) {
+      el.innerHTML = '<div class="empty"><h3>Sin suscripciones</h3><p>Las suscripciones activas y pasadas aparecerán aquí.</p></div>';
+      return;
+    }
+    el.innerHTML = allSubs.map(function(s) {
+      var planLabel = {comprador_free:'Free', comprador_premium:'Premium', broker_basico:'Básico', broker_pro:'Pro', broker_elite:'Élite'}[s.plan_id] || s.plan_id;
+      var titular = '';
+      if (s.usuario_id) {
+        var u = allUsers.find(function(x){return x.id === s.usuario_id;});
+        titular = (u && u.nombre) || s.usuario_id;
+      } else if (s.broker_id) {
+        var b = allBrokers.find(function(x){return x.id === s.broker_id;});
+        titular = ((b && b.nombre) || s.broker_id) + ' (broker)';
+      }
+      var estadoBadge = {active:'badge-brand', pending:'badge-warning', cancelled:'badge-danger', expired:'badge-info'}[s.estado] || '';
+      return '<div class="item">' +
+        '<div class="item-head">' +
+          '<div><span class="item-title">' + H.escapeHtml(titular) + '</span> · <span style="color:var(--text-muted); font-size:13px;">' + planLabel + ' · ' + H.formatCOP(s.monto) + '</span></div>' +
+          '<span class="badge ' + estadoBadge + '">' + s.estado + '</span>' +
+        '</div>' +
+        '<div class="item-foot"><span>desde ' + H.timeAgo(s.inicio_at) + '</span><span>vence ' + (s.fin_at ? 'en ' + H.daysUntil(s.fin_at) + ' días' : '—') + '</span></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ===== Mandate detail =====
+  function openMandateDetail(id) {
+    var m = allMandates.find(function(x){return x.id === id;});
+    if (!m) return;
+    currentMandate = m;
+
+    document.getElementById('md-name').textContent = m.contact_name || 'Mandato';
+    document.getElementById('md-meta').textContent = m.id + ' · ' + H.timeAgo(m.created_at);
+
+    var fieldsHtml = '';
+    if (m.fields) {
+      Object.keys(m.fields).forEach(function(k) {
+        fieldsHtml += '<div class="detail-item"><div class="detail-item-key">' + H.escapeHtml(k) + '</div><div class="detail-item-value">' + H.escapeHtml(m.fields[k]) + '</div></div>';
+      });
+    }
+
+    document.getElementById('md-body').innerHTML =
+      '<div class="contact-card">' +
+        '<div><strong>' + H.escapeHtml(m.contact_name) + '</strong></div>' +
+        '<div>+57 ' + H.escapeHtml(m.contact_phone) + '</div>' +
+        (m.contact_email ? '<div>' + H.escapeHtml(m.contact_email) + '</div>' : '') +
+      '</div>' +
+      '<div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin:14px 0 6px;">Lo que busca</div>' +
+      '<div style="font-size:14px; line-height:1.6; padding:12px 14px; background:var(--bg); border-radius:var(--radius-md);">' + H.escapeHtml(m.free_text || 'Sin descripción') + '</div>' +
+      (Object.keys(m.fields || {}).length > 0 ? '<div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin:14px 0 6px;">Especificaciones</div><div class="detail-grid">' + fieldsHtml + '</div>' : '');
+
+    document.getElementById('md-status').value = m.status;
+    document.getElementById('mandate-modal').classList.add('open');
+    document.body.classList.add('modal-open');
+  }
+
+  document.getElementById('md-close').addEventListener('click', function() {
+    document.getElementById('mandate-modal').classList.remove('open');
+    document.body.classList.remove('modal-open');
+  });
+  document.getElementById('mandate-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.classList.remove('open');
+      document.body.classList.remove('modal-open');
+    }
+  });
+
+  document.getElementById('md-status').addEventListener('change', function() {
+    if (!currentMandate) return;
+    var newStatus = this.value;
+    if (DB.isConfigured()) {
+      DB.update('mandatos', currentMandate.id, { status: newStatus }).then(function() {
+        currentMandate.status = newStatus;
+        showToast('Estado actualizado'); refreshAll();
+      });
+    } else {
+      currentMandate.status = newStatus;
+      showToast('Estado actualizado'); renderMandates(); renderStats();
+    }
+  });
+
+  document.getElementById('md-whatsapp').addEventListener('click', function() {
+    if (!currentMandate) return;
+    var msg = 'Hola ' + (currentMandate.contact_name || '').split(' ')[0] + ', soy del equipo Mandato. Sobre tu solicitud, ¿podemos hablar un momento?';
+    window.open('https://wa.me/57' + currentMandate.contact_phone + '?text=' + encodeURIComponent(msg), '_blank');
+  });
+
+  document.getElementById('md-add-offer').addEventListener('click', function() {
+    document.getElementById('offer-modal').classList.add('open');
+  });
+
+  // ===== Offer modal =====
+  function closeOfferModal() {
+    document.getElementById('offer-modal').classList.remove('open');
+    ['of-name','of-location','of-price','of-area','of-rooms','of-baths','of-why','of-link'].forEach(function(id){document.getElementById(id).value = '';});
+  }
+  document.getElementById('of-cancel').addEventListener('click', closeOfferModal);
+  document.getElementById('offer-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeOfferModal();
+  });
+
+  document.getElementById('of-submit').addEventListener('click', function() {
+    if (!currentMandate) return;
+    var name = document.getElementById('of-name').value.trim();
+    var price = document.getElementById('of-price').value.trim();
+    if (!name || !price) { showToast('Mínimo nombre y precio'); return; }
+    var offer = {
+      id: H.uid('o'),
+      mandate_id: currentMandate.id,
+      enviada_por: 'team',
+      name: name,
+      location: document.getElementById('of-location').value.trim() || null,
+      price: price,
+      area: document.getElementById('of-area').value.trim() || null,
+      rooms: document.getElementById('of-rooms').value.trim() || null,
+      baths: document.getElementById('of-baths').value.trim() || null,
+      why: document.getElementById('of-why').value.trim() || null,
+      link: document.getElementById('of-link').value.trim() || null
+    };
+
+    var notify = function() {
+      var contactName = (currentMandate.contact_name || '').split(' ')[0];
+      var msg = 'Hola ' + contactName + ', tengo una nueva oferta para tu mandato:\n\n' +
+        '🏠 ' + offer.name + '\n' +
+        (offer.location ? '📍 ' + offer.location + '\n' : '') +
+        '💰 $' + offer.price + ' COP\n' +
+        (offer.area ? '📐 ' + offer.area + ' m²' + (offer.rooms ? ' · ' + offer.rooms + ' hab' : '') + (offer.baths ? ' · ' + offer.baths + ' baños' : '') + '\n' : '') +
+        (offer.why ? '\n' + offer.why + '\n' : '') +
+        (offer.link ? '\nMás info: ' + offer.link + '\n' : '') +
+        '\n¿Te interesa visitar?';
+      if (confirm('¿Notificar a ' + currentMandate.contact_name + ' por WhatsApp?')) {
+        window.open('https://wa.me/57' + currentMandate.contact_phone + '?text=' + encodeURIComponent(msg), '_blank');
+      }
+    };
+
+    if (DB.isConfigured()) {
+      DB.insert('ofertas', offer).then(function() {
+        showToast('Oferta guardada');
+        closeOfferModal();
+        refreshAll();
+        setTimeout(notify, 400);
+      }).catch(function(e) {
+        console.error(e); showToast('Error: ' + e.message);
+      });
+    } else {
+      currentMandate.ofertas_count = (currentMandate.ofertas_count || 0) + 1;
+      showToast('Oferta guardada (demo)');
+      closeOfferModal();
+      renderMandates(); renderStats();
+      setTimeout(notify, 400);
+    }
+  });
+
+  // ===== Helpers =====
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function(){t.classList.remove('show');}, 2500);
+  }
+
+  // ===== Init =====
+  if (checkAuth()) showApp();
+  else { showLogin(); document.getElementById('login-password').focus(); }
+
+})();
+</script>
+
+</body>
+</html>
