@@ -10,20 +10,21 @@
 <meta property="og:description" content="Inversionistas y compradores publican qué necesitan. Brokers afiliados traen las opciones.">
 <meta property="og:type" content="website">
 <style>
-  /* ===== Reset ===== */
   *, *::before, *::after { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   body { margin: 0; }
+  body.modal-open { overflow: hidden; }
   button { font: inherit; color: inherit; cursor: pointer; }
-  textarea { font: inherit; }
+  textarea, input { font: inherit; }
   a { color: inherit; }
 
-  /* ===== Variables ===== */
   :root {
     --brand: #0F6E56;
     --brand-hover: #0C5A47;
     --brand-light: #E1F5EE;
     --brand-text: #04342C;
+    --whatsapp: #25D366;
+    --whatsapp-hover: #1FB957;
     --bg: #FAFAF7;
     --surface: #FFFFFF;
     --surface-alt: #F4F2EC;
@@ -32,12 +33,15 @@
     --text-faint: #888780;
     --border: rgba(0, 0, 0, 0.1);
     --border-strong: rgba(0, 0, 0, 0.18);
+    --danger: #A32D2D;
+    --danger-light: #FCEBEB;
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 14px;
     --radius-pill: 999px;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.18);
     --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --max-width: 760px;
   }
@@ -48,6 +52,8 @@
       --brand-hover: #7FD9BC;
       --brand-light: rgba(29, 158, 117, 0.18);
       --brand-text: #9FE1CB;
+      --whatsapp: #25D366;
+      --whatsapp-hover: #2EE074;
       --bg: #18181A;
       --surface: #1F1F22;
       --surface-alt: #15151A;
@@ -56,6 +62,8 @@
       --text-faint: #6E6E6A;
       --border: rgba(255, 255, 255, 0.08);
       --border-strong: rgba(255, 255, 255, 0.16);
+      --danger: #F09595;
+      --danger-light: rgba(226, 75, 74, 0.15);
     }
   }
 
@@ -69,11 +77,10 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* ===== Layout helpers ===== */
   .wrap { max-width: var(--max-width); margin: 0 auto; padding: 0 16px; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
-  /* ===== Navbar ===== */
+  /* Navbar */
   .nav {
     position: sticky;
     top: 0;
@@ -104,7 +111,7 @@
     .nav-links { display: flex; }
   }
 
-  /* ===== Buttons ===== */
+  /* Buttons */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -122,6 +129,7 @@
     min-height: 40px;
   }
   .btn:hover { background: var(--surface-alt); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .btn-primary {
     background: var(--brand);
     border-color: var(--brand);
@@ -135,10 +143,8 @@
     .btn-block { width: auto; }
   }
 
-  /* ===== Hero ===== */
-  .hero {
-    padding: 32px 0 24px;
-  }
+  /* Hero */
+  .hero { padding: 32px 0 24px; }
   .hero-eyebrow {
     font-size: 11px;
     color: var(--brand);
@@ -153,7 +159,6 @@
     letter-spacing: -0.025em;
     margin: 0 0 12px;
     font-weight: 600;
-    color: var(--text);
   }
   .hero-lead {
     font-size: 15px;
@@ -168,7 +173,7 @@
     .hero-lead { font-size: 17px; }
   }
 
-  /* ===== Composer ===== */
+  /* Composer */
   .composer {
     background: var(--surface);
     border: 0.5px solid var(--border-strong);
@@ -208,7 +213,7 @@
     gap: 8px;
   }
 
-  /* ===== Necesito block ===== */
+  /* Necesito */
   .necesito {
     background: var(--surface);
     border: 0.5px solid var(--border);
@@ -228,35 +233,17 @@
   }
   .necesito-title { font-size: 15px; font-weight: 600; }
   .necesito-sub { font-size: 11px; color: var(--text-faint); }
-  .row {
-    padding: 12px 0;
-    border-bottom: 0.5px solid var(--border);
-  }
+  .row { padding: 12px 0; border-bottom: 0.5px solid var(--border); }
   .row:last-child { border-bottom: none; }
-  .row-label {
-    display: block;
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 500;
-    margin-bottom: 8px;
-  }
+  .row-label { display: block; font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 8px; }
   @media (min-width: 640px) {
     .necesito { padding: 22px 22px 8px; }
-    .row {
-      display: grid;
-      grid-template-columns: 130px 1fr;
-      gap: 16px;
-      align-items: flex-start;
-    }
+    .row { display: grid; grid-template-columns: 130px 1fr; gap: 16px; align-items: flex-start; }
     .row-label { padding-top: 7px; margin-bottom: 0; }
   }
 
-  /* ===== Chips ===== */
-  .chip-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
+  /* Chips */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
     border: 0.5px solid var(--border-strong);
     background: var(--surface);
@@ -281,7 +268,7 @@
   }
   .chip:active { transform: scale(0.97); }
 
-  /* ===== More toggle ===== */
+  /* More toggle */
   .more-toggle {
     background: var(--surface);
     border: 0.5px solid var(--border);
@@ -298,18 +285,9 @@
   }
   .more-toggle:hover { background: var(--surface-alt); }
   .more-toggle-text { font-size: 13px; color: var(--text-muted); }
-  .more-toggle-arrow {
-    color: var(--text-faint);
-    font-size: 11px;
-    transition: transform 0.2s;
-    margin-left: 8px;
-  }
+  .more-toggle-arrow { color: var(--text-faint); font-size: 11px; transition: transform 0.2s; margin-left: 8px; }
   .more-toggle.open .more-toggle-arrow { transform: rotate(180deg); }
-  .more-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-  }
+  .more-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
   .more-content.open { max-height: 1200px; }
   .more-inner {
     background: var(--surface);
@@ -322,7 +300,7 @@
     .more-inner { padding: 18px 22px 8px; }
   }
 
-  /* ===== Publish bar ===== */
+  /* Publish bar */
   .publish-bar {
     display: flex;
     flex-direction: column;
@@ -333,73 +311,94 @@
     border-radius: var(--radius-lg);
     margin-bottom: 32px;
   }
-  .publish-note {
-    font-size: 12px;
-    color: var(--text-faint);
-    line-height: 1.55;
-  }
+  .publish-note { font-size: 12px; color: var(--text-faint); line-height: 1.55; margin: 0; }
   @media (min-width: 720px) {
-    .publish-bar {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 20px;
-    }
+    .publish-bar { flex-direction: row; align-items: center; justify-content: space-between; padding: 18px 20px; }
     .publish-note { max-width: 380px; }
   }
 
-  /* ===== Sections ===== */
-  .section {
-    padding: 40px 0;
-  }
-  .section.alt {
-    background: var(--surface);
-    border-top: 0.5px solid var(--border);
-    border-bottom: 0.5px solid var(--border);
-  }
-  .section h2 {
-    font-size: 22px;
-    margin: 0 0 8px;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-  }
-  .section-sub {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin: 0 0 24px;
-  }
+  /* Sections */
+  .section { padding: 40px 0; }
+  .section.alt { background: var(--surface); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+  .section h2 { font-size: 22px; margin: 0 0 8px; font-weight: 600; letter-spacing: -0.015em; }
+  .section-sub { font-size: 14px; color: var(--text-muted); margin: 0 0 24px; }
   @media (min-width: 720px) {
     .section { padding: 64px 0; }
     .section h2 { font-size: 26px; }
   }
 
-  /* ===== Live feed ===== */
-  .live-feed {
+  /* Success banner */
+  .success-banner {
+    background: var(--brand-light);
+    border: 0.5px solid var(--brand);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 18px;
     display: flex;
-    flex-direction: column;
+    align-items: flex-start;
     gap: 10px;
+    font-size: 14px;
+    color: var(--brand-text);
+    line-height: 1.5;
+    animation: slideDown 0.4s ease;
   }
+  .success-banner svg { flex-shrink: 0; margin-top: 1px; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Live feed */
+  .live-feed { display: flex; flex-direction: column; gap: 10px; }
   .live-card {
     background: var(--bg);
     border: 0.5px solid var(--border);
     border-radius: var(--radius-md);
     padding: 14px 16px;
     transition: border-color 0.15s;
+    position: relative;
   }
   .live-card:hover { border-color: var(--border-strong); }
-  .live-text {
-    font-size: 14px;
-    line-height: 1.55;
-    color: var(--text);
-    margin-bottom: 10px;
+  .live-card.own {
+    background: var(--surface);
+    border-color: var(--brand);
+    border-width: 1px;
   }
-  .live-meta {
+  .live-card.own::before {
+    content: 'tu mandato';
+    position: absolute;
+    top: -8px;
+    left: 14px;
+    background: var(--brand);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    letter-spacing: 0.04em;
+  }
+  .live-card-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-faint);
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
+    justify-content: center;
+    transition: all 0.12s;
+    padding: 0;
   }
+  .live-card-delete:hover {
+    background: var(--danger-light);
+    color: var(--danger);
+  }
+  .live-text { font-size: 14px; line-height: 1.55; color: var(--text); margin: 0 24px 10px 0; }
+  .live-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
   .live-tags { display: flex; gap: 5px; flex-wrap: wrap; }
   .live-tag {
     font-size: 10px;
@@ -410,107 +409,209 @@
     font-weight: 500;
     letter-spacing: 0.02em;
   }
-  .live-tag.hot {
-    background: var(--brand-light);
-    color: var(--brand-text);
-  }
+  .live-tag.hot { background: var(--brand-light); color: var(--brand-text); }
   .live-time { font-size: 11px; color: var(--text-faint); }
 
-  /* ===== How it works ===== */
-  .how-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
+  /* How it works */
+  .how-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
   .how-card {
     background: var(--bg);
     border: 0.5px solid var(--border);
     border-radius: var(--radius-md);
     padding: 18px 18px;
   }
-  .how-num {
-    font-size: 26px;
-    font-weight: 600;
-    color: var(--brand);
-    margin-bottom: 8px;
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-  .how-title {
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .how-desc {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.55;
-  }
+  .how-num { font-size: 26px; font-weight: 600; color: var(--brand); margin-bottom: 8px; letter-spacing: -0.02em; line-height: 1; }
+  .how-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .how-desc { font-size: 13px; color: var(--text-muted); line-height: 1.55; margin: 0; }
   @media (min-width: 720px) {
     .how-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
   }
 
-  /* ===== Final CTA ===== */
-  .final-cta {
-    text-align: center;
-    padding: 48px 0 64px;
-  }
-  .final-cta h2 {
-    font-size: 24px;
-    margin: 0 0 10px;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-  }
-  .final-cta p {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin: 0 0 22px;
-  }
+  /* Final CTA */
+  .final-cta { text-align: center; padding: 48px 0 80px; }
+  .final-cta h2 { font-size: 24px; margin: 0 0 10px; font-weight: 600; letter-spacing: -0.015em; }
+  .final-cta p { font-size: 14px; color: var(--text-muted); margin: 0 0 22px; }
   @media (min-width: 720px) {
     .final-cta h2 { font-size: 30px; }
   }
 
-  /* ===== Footer ===== */
-  footer {
-    padding: 24px 0;
-    background: var(--surface-alt);
-    border-top: 0.5px solid var(--border);
-  }
-  .foot-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
+  /* Footer */
+  footer { padding: 24px 0 88px; background: var(--surface-alt); border-top: 0.5px solid var(--border); }
+  .foot-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
   .foot-text { font-size: 12px; color: var(--text-faint); }
   .foot-links { display: flex; gap: 16px; }
-  .foot-links a {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-decoration: none;
-    transition: color 0.12s;
-  }
+  .foot-links a { font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color 0.12s; }
   .foot-links a:hover { color: var(--text); }
 
-  /* ===== Live indicator ===== */
-  .live-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-  .live-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--brand);
-    animation: pulse 2s ease-in-out infinite;
-  }
+  /* Live indicator */
+  .live-indicator { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); animation: pulse 2s ease-in-out infinite; }
   @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
+  }
+
+  /* Floating WhatsApp button */
+  .wa-fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--whatsapp);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35);
+    text-decoration: none;
+    transition: all 0.2s;
+    z-index: 40;
+  }
+  .wa-fab:hover { background: var(--whatsapp-hover); transform: scale(1.05); }
+  .wa-fab:active { transform: scale(0.95); }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    padding: 0;
+  }
+  .modal-backdrop.open { opacity: 1; visibility: visible; }
+  @media (min-width: 640px) {
+    .modal-backdrop { align-items: center; padding: 24px; }
+  }
+  .modal {
+    background: var(--surface);
+    width: 100%;
+    max-width: 460px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 24px 20px 20px;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(20px);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .modal-backdrop.open .modal { transform: translateY(0); }
+  @media (min-width: 640px) {
+    .modal { border-radius: var(--radius-lg); padding: 28px; }
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+    padding: 0;
+  }
+  .modal-close:hover { background: var(--bg); color: var(--text); }
+  .modal h3 { font-size: 20px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.015em; }
+  .modal-sub { font-size: 14px; color: var(--text-muted); margin: 0 0 20px; }
+
+  .form-field { margin-bottom: 14px; }
+  .form-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .form-field .optional { color: var(--text-faint); font-weight: 400; }
+  .form-field input {
+    width: 100%;
+    padding: 11px 13px;
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.4;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-field input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-light);
+  }
+  .form-field input.error {
+    border-color: var(--danger);
+  }
+  .form-error {
+    font-size: 11px;
+    color: var(--danger);
+    margin-top: 4px;
+    display: none;
+  }
+  .form-field.has-error .form-error { display: block; }
+
+  .phone-input {
+    display: flex;
+    align-items: stretch;
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .phone-input:focus-within {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-light);
+  }
+  .phone-input.error { border-color: var(--danger); }
+  .phone-prefix {
+    padding: 11px 12px;
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    border-right: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+  }
+  .phone-input input {
+    border: none;
+    background: transparent;
+    padding: 11px 13px;
+    flex: 1;
+    width: 100%;
+    font-size: 16px;
+    color: var(--text);
+    outline: none;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .modal-actions .btn { flex: 1; }
+  .modal-privacy {
+    font-size: 11px;
+    color: var(--text-faint);
+    line-height: 1.5;
+    margin: 14px 0 0;
+    text-align: center;
   }
 </style>
 </head>
@@ -559,7 +660,7 @@
 
       <div class="row">
         <span class="row-label">Tipo</span>
-        <div class="chip-row" data-multi>
+        <div class="chip-row" data-multi data-key="Tipo">
           <button type="button" class="chip selected">Apartamento</button>
           <button type="button" class="chip">Apartaestudio</button>
           <button type="button" class="chip">Casa</button>
@@ -572,7 +673,7 @@
 
       <div class="row">
         <span class="row-label">Para qué</span>
-        <div class="chip-row" data-single>
+        <div class="chip-row" data-single data-key="Para qué">
           <button type="button" class="chip selected">Inversión Airbnb</button>
           <button type="button" class="chip">Renta larga</button>
           <button type="button" class="chip">Vivir</button>
@@ -583,7 +684,7 @@
 
       <div class="row">
         <span class="row-label">Zona</span>
-        <div class="chip-row" data-multi>
+        <div class="chip-row" data-multi data-key="Zona">
           <button type="button" class="chip selected">El Poblado</button>
           <button type="button" class="chip selected">Laureles</button>
           <button type="button" class="chip">Envigado</button>
@@ -597,7 +698,7 @@
 
       <div class="row">
         <span class="row-label">Habitaciones</span>
-        <div class="chip-row" data-multi>
+        <div class="chip-row" data-multi data-key="Habitaciones">
           <button type="button" class="chip">1</button>
           <button type="button" class="chip selected">2</button>
           <button type="button" class="chip">3</button>
@@ -608,7 +709,7 @@
 
       <div class="row">
         <span class="row-label">Baños</span>
-        <div class="chip-row" data-multi>
+        <div class="chip-row" data-multi data-key="Baños">
           <button type="button" class="chip">1</button>
           <button type="button" class="chip selected">2</button>
           <button type="button" class="chip">3 o más</button>
@@ -618,7 +719,7 @@
 
       <div class="row">
         <span class="row-label">Área desde</span>
-        <div class="chip-row" data-single>
+        <div class="chip-row" data-single data-key="Área desde">
           <button type="button" class="chip">40 m²</button>
           <button type="button" class="chip selected">60 m²</button>
           <button type="button" class="chip">80 m²</button>
@@ -630,7 +731,7 @@
 
       <div class="row">
         <span class="row-label">Parqueaderos</span>
-        <div class="chip-row" data-single>
+        <div class="chip-row" data-single data-key="Parqueaderos">
           <button type="button" class="chip">0</button>
           <button type="button" class="chip selected">1</button>
           <button type="button" class="chip">2 o más</button>
@@ -640,7 +741,7 @@
 
       <div class="row">
         <span class="row-label">Estrato</span>
-        <div class="chip-row" data-multi>
+        <div class="chip-row" data-multi data-key="Estrato">
           <button type="button" class="chip">3</button>
           <button type="button" class="chip">4</button>
           <button type="button" class="chip selected">5</button>
@@ -651,7 +752,7 @@
 
       <div class="row">
         <span class="row-label">Presupuesto</span>
-        <div class="chip-row" data-single>
+        <div class="chip-row" data-single data-key="Presupuesto">
           <button type="button" class="chip">Hasta $200M</button>
           <button type="button" class="chip">$200 a $400M</button>
           <button type="button" class="chip selected">$400 a $600M</button>
@@ -662,7 +763,7 @@
 
       <div class="row">
         <span class="row-label">Forma de pago</span>
-        <div class="chip-row" data-single>
+        <div class="chip-row" data-single data-key="Forma de pago">
           <button type="button" class="chip selected">Contado</button>
           <button type="button" class="chip">Crédito hipotecario</button>
           <button type="button" class="chip">Mixto</button>
@@ -672,7 +773,7 @@
 
       <div class="row">
         <span class="row-label">Plazo</span>
-        <div class="chip-row" data-single>
+        <div class="chip-row" data-single data-key="Plazo">
           <button type="button" class="chip">Esta semana</button>
           <button type="button" class="chip selected">1 a 3 meses</button>
           <button type="button" class="chip">3 a 6 meses</button>
@@ -690,7 +791,7 @@
       <div class="more-inner">
         <div class="row">
           <span class="row-label">Estado</span>
-          <div class="chip-row" data-multi>
+          <div class="chip-row" data-multi data-key="Estado">
             <button type="button" class="chip">Sobre planos</button>
             <button type="button" class="chip">Nuevo</button>
             <button type="button" class="chip selected">Usado</button>
@@ -699,7 +800,7 @@
         </div>
         <div class="row">
           <span class="row-label">Antigüedad</span>
-          <div class="chip-row" data-single>
+          <div class="chip-row" data-single data-key="Antigüedad">
             <button type="button" class="chip">Menos de 5 años</button>
             <button type="button" class="chip selected">Menos de 15 años</button>
             <button type="button" class="chip">Indiferente</button>
@@ -707,7 +808,7 @@
         </div>
         <div class="row">
           <span class="row-label">Amoblado</span>
-          <div class="chip-row" data-single>
+          <div class="chip-row" data-single data-key="Amoblado">
             <button type="button" class="chip">Sí</button>
             <button type="button" class="chip">No</button>
             <button type="button" class="chip selected">Indiferente</button>
@@ -715,7 +816,7 @@
         </div>
         <div class="row">
           <span class="row-label">Amenidades</span>
-          <div class="chip-row" data-multi>
+          <div class="chip-row" data-multi data-key="Amenidades">
             <button type="button" class="chip selected">Ascensor</button>
             <button type="button" class="chip">Piscina</button>
             <button type="button" class="chip">Gimnasio</button>
@@ -727,7 +828,7 @@
         </div>
         <div class="row">
           <span class="row-label">Vista</span>
-          <div class="chip-row" data-single>
+          <div class="chip-row" data-single data-key="Vista">
             <button type="button" class="chip">Ciudad</button>
             <button type="button" class="chip">Montaña</button>
             <button type="button" class="chip">Interior</button>
@@ -736,7 +837,7 @@
         </div>
         <div class="row">
           <span class="row-label">Mascotas</span>
-          <div class="chip-row" data-single>
+          <div class="chip-row" data-single data-key="Mascotas">
             <button type="button" class="chip">Sí, las llevo</button>
             <button type="button" class="chip selected">No aplica</button>
           </div>
@@ -755,8 +856,9 @@
   <div class="wrap">
     <h2>Mandatos activos ahora</h2>
     <p class="section-sub">Estos compradores ya están publicados. Si eres broker afiliado, puedes postularte a los que tengan cupo.</p>
-    <div class="live-feed">
-      <article class="live-card">
+    <div id="success-anchor"></div>
+    <div class="live-feed" id="live-feed">
+      <article class="live-card" data-seed>
         <p class="live-text">Apartamento 2 hab en El Poblado o Laureles para Airbnb · 60 m² o más · estrato 5–6 · contado · hasta $450M.</p>
         <div class="live-meta">
           <div class="live-tags">
@@ -767,7 +869,7 @@
           <span class="live-time">hace 6 horas · 3 ofertas</span>
         </div>
       </article>
-      <article class="live-card">
+      <article class="live-card" data-seed>
         <p class="live-text">Casa familiar en Envigado · 3 habitaciones · con patio · estrato 5 · crédito pre-aprobado · hasta $900M.</p>
         <div class="live-meta">
           <div class="live-tags">
@@ -778,7 +880,7 @@
           <span class="live-time">hace 2 días · 2 ofertas</span>
         </div>
       </article>
-      <article class="live-card">
+      <article class="live-card" data-seed>
         <p class="live-text">Apartaestudio en Provenza para flip · acepta para remodelar · hasta $280M · contado.</p>
         <div class="live-meta">
           <div class="live-tags">
@@ -788,7 +890,7 @@
           <span class="live-time">hace 1 día · 0 ofertas · cupo abierto</span>
         </div>
       </article>
-      <article class="live-card">
+      <article class="live-card" data-seed>
         <p class="live-text">Lote en Las Palmas o Llanogrande · 800 a 1.200M · sin afán · prefiere con vista a la ciudad.</p>
         <div class="live-meta">
           <div class="live-tags">
@@ -846,9 +948,60 @@
   </div>
 </footer>
 
+<a href="#" class="wa-fab" id="wa-fab" aria-label="Escríbenos por WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<div class="modal-backdrop" id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <button type="button" class="modal-close" id="modal-close" aria-label="Cerrar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <h3 id="modal-title">Un último paso</h3>
+    <p class="modal-sub">¿Cómo te contactamos cuando lleguen las ofertas?</p>
+
+    <div class="form-field" id="field-name">
+      <label for="form-name">Nombre completo</label>
+      <input type="text" id="form-name" autocomplete="name" placeholder="Tu nombre" required>
+      <div class="form-error">Cuéntanos cómo te llamas.</div>
+    </div>
+
+    <div class="form-field" id="field-phone">
+      <label for="form-phone">WhatsApp</label>
+      <div class="phone-input" id="phone-input">
+        <span class="phone-prefix">+57</span>
+        <input type="tel" id="form-phone" autocomplete="tel" placeholder="3001234567" inputmode="numeric" maxlength="10" required>
+      </div>
+      <div class="form-error">Ingresa un número celular válido de 10 dígitos.</div>
+    </div>
+
+    <div class="form-field" id="field-email">
+      <label for="form-email">Email <span class="optional">(opcional)</span></label>
+      <input type="email" id="form-email" autocomplete="email" placeholder="tu@ejemplo.com">
+      <div class="form-error">Ingresa un email válido o déjalo vacío.</div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn" id="modal-cancel">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="modal-submit">Publicar y abrir WhatsApp</button>
+    </div>
+
+    <p class="modal-privacy">Tus datos solo se usan para enviarte ofertas. No los compartimos con terceros.</p>
+  </div>
+</div>
+
 <script>
 (function() {
-  // Single-select chip rows
+  // ===== Configuración =====
+  var WHATSAPP_NUMBER = '573005485019';
+  var STORAGE_KEY = 'mandato_published_v1';
+
+  // ===== Helpers de chips =====
   document.querySelectorAll('.chip-row[data-single]').forEach(function(row) {
     row.querySelectorAll('.chip').forEach(function(chip) {
       chip.addEventListener('click', function() {
@@ -857,17 +1010,13 @@
       });
     });
   });
-
-  // Multi-select chip rows
   document.querySelectorAll('.chip-row[data-multi]').forEach(function(row) {
     row.querySelectorAll('.chip').forEach(function(chip) {
-      chip.addEventListener('click', function() {
-        chip.classList.toggle('selected');
-      });
+      chip.addEventListener('click', function() { chip.classList.toggle('selected'); });
     });
   });
 
-  // Composer character count
+  // ===== Composer character count =====
   var post = document.getElementById('post');
   var count = document.getElementById('count');
   function updateCount() {
@@ -878,7 +1027,7 @@
     updateCount();
   }
 
-  // More toggle
+  // ===== More toggle =====
   var toggle = document.getElementById('more-toggle');
   var content = document.getElementById('more-content');
   if (toggle && content) {
@@ -889,19 +1038,305 @@
     });
   }
 
-  // Publish button (placeholder action)
+  // ===== Recolectar datos del formulario =====
+  function collectFormData() {
+    var data = {
+      freeText: post ? post.value.trim() : '',
+      fields: {}
+    };
+    document.querySelectorAll('.chip-row[data-key]').forEach(function(row) {
+      var key = row.getAttribute('data-key');
+      var selected = Array.from(row.querySelectorAll('.chip.selected')).map(function(c) { return c.textContent.trim(); });
+      if (selected.length > 0) data.fields[key] = selected.join(', ');
+    });
+    return data;
+  }
+
+  // ===== Construir mensaje de WhatsApp =====
+  function buildWhatsAppMessage(data, contact) {
+    var lines = ['Hola Mandato, quiero publicar un mandato.', ''];
+    lines.push('Lo que busco:');
+    lines.push(data.freeText || '(sin texto adicional)');
+    lines.push('');
+    if (Object.keys(data.fields).length > 0) {
+      lines.push('Detalles:');
+      Object.keys(data.fields).forEach(function(key) {
+        lines.push('- ' + key + ': ' + data.fields[key]);
+      });
+      lines.push('');
+    }
+    lines.push('Mis datos:');
+    lines.push('- Nombre: ' + contact.name);
+    lines.push('- WhatsApp: +57 ' + contact.phone);
+    if (contact.email) lines.push('- Email: ' + contact.email);
+    return lines.join('\n');
+  }
+
+  // ===== Resumen corto para el feed =====
+  function buildSummary(data) {
+    if (data.freeText && data.freeText.length > 0) {
+      return data.freeText;
+    }
+    var parts = [];
+    if (data.fields['Tipo']) parts.push(data.fields['Tipo']);
+    if (data.fields['Habitaciones']) parts.push(data.fields['Habitaciones'] + ' hab');
+    if (data.fields['Zona']) parts.push('en ' + data.fields['Zona']);
+    if (data.fields['Para qué']) parts.push('para ' + data.fields['Para qué'].toLowerCase());
+    if (data.fields['Presupuesto']) parts.push(data.fields['Presupuesto']);
+    return parts.join(' · ') || 'Mandato sin descripción';
+  }
+
+  // ===== Tags resumen =====
+  function buildTags(data) {
+    var tags = [];
+    if (data.fields['Forma de pago']) tags.push({label: data.fields['Forma de pago'].toLowerCase(), hot: false});
+    if (data.fields['Plazo']) tags.push({label: data.fields['Plazo'].toLowerCase(), hot: false});
+    if (data.fields['Presupuesto']) tags.push({label: data.fields['Presupuesto'], hot: false});
+    return tags.slice(0, 3);
+  }
+
+  // ===== Persistencia local =====
+  function getPublished() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+  function savePublished(list) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
+  function addPublished(item) {
+    var list = getPublished();
+    list.unshift(item);
+    savePublished(list);
+  }
+  function removePublished(id) {
+    var list = getPublished().filter(function(m) { return m.id !== id; });
+    savePublished(list);
+  }
+
+  // ===== Tiempo relativo =====
+  function timeAgo(timestamp) {
+    var seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 60) return 'hace unos segundos';
+    var minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return 'hace ' + minutes + ' min';
+    var hours = Math.floor(minutes / 60);
+    if (hours < 24) return 'hace ' + hours + ' h';
+    var days = Math.floor(hours / 24);
+    return 'hace ' + days + (days === 1 ? ' día' : ' días');
+  }
+
+  // ===== Render mandatos del usuario =====
+  function renderUserMandates() {
+    var feed = document.getElementById('live-feed');
+    if (!feed) return;
+    feed.querySelectorAll('.live-card.own').forEach(function(c) { c.remove(); });
+
+    var published = getPublished();
+    published.slice().reverse().forEach(function(item) {
+      var card = document.createElement('article');
+      card.className = 'live-card own';
+      card.setAttribute('data-id', item.id);
+
+      var tagsHtml = (item.tags || []).map(function(t) {
+        return '<span class="live-tag' + (t.hot ? ' hot' : '') + '">' + escapeHtml(t.label) + '</span>';
+      }).join('');
+
+      card.innerHTML =
+        '<button type="button" class="live-card-delete" aria-label="Eliminar este mandato">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+        '</button>' +
+        '<p class="live-text">' + escapeHtml(item.summary) + '</p>' +
+        '<div class="live-meta">' +
+          '<div class="live-tags">' + tagsHtml + '</div>' +
+          '<span class="live-time">' + timeAgo(item.timestamp) + ' · esperando ofertas</span>' +
+        '</div>';
+
+      card.querySelector('.live-card-delete').addEventListener('click', function() {
+        if (confirm('¿Eliminar este mandato del feed? (Solo se borra de tu vista local; si ya nos escribiste por WhatsApp, esa conversación queda activa.)')) {
+          removePublished(item.id);
+          renderUserMandates();
+        }
+      });
+
+      feed.insertBefore(card, feed.firstChild);
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // ===== Modal =====
+  var modal = document.getElementById('modal-backdrop');
+  var modalClose = document.getElementById('modal-close');
+  var modalCancel = document.getElementById('modal-cancel');
+  var modalSubmit = document.getElementById('modal-submit');
   var publishBtn = document.getElementById('publish-btn');
+  var nameInput = document.getElementById('form-name');
+  var phoneInput = document.getElementById('form-phone');
+  var emailInput = document.getElementById('form-email');
+
+  function openModal() {
+    modal.classList.add('open');
+    document.body.classList.add('modal-open');
+    setTimeout(function() { nameInput && nameInput.focus(); }, 100);
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+    document.body.classList.remove('modal-open');
+    clearErrors();
+  }
+  function clearErrors() {
+    document.querySelectorAll('.form-field').forEach(function(f) { f.classList.remove('has-error'); });
+    var phoneWrap = document.getElementById('phone-input');
+    if (phoneWrap) phoneWrap.classList.remove('error');
+  }
+  function showError(fieldId) {
+    var field = document.getElementById(fieldId);
+    if (field) field.classList.add('has-error');
+    if (fieldId === 'field-phone') {
+      var phoneWrap = document.getElementById('phone-input');
+      if (phoneWrap) phoneWrap.classList.add('error');
+    }
+  }
+
   if (publishBtn) {
     publishBtn.addEventListener('click', function() {
       var text = post ? post.value.trim() : '';
       if (text.length < 20) {
-        alert('Cuéntanos un poco más sobre lo que buscas (mínimo 20 caracteres).');
-        if (post) post.focus();
+        if (post) {
+          post.focus();
+          post.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+        alert('Cuéntanos un poco más sobre lo que buscas (mínimo 20 caracteres en el campo de texto).');
         return;
       }
-      alert('¡Tu mandato fue publicado! En las próximas 48 horas recibirás ofertas por WhatsApp.\n\n(En producción: aquí va el formulario de contacto + WhatsApp + verificación.)');
+      openModal();
     });
   }
+
+  if (modalClose) modalClose.addEventListener('click', closeModal);
+  if (modalCancel) modalCancel.addEventListener('click', closeModal);
+  if (modal) {
+    modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+
+  // Phone: solo números
+  if (phoneInput) {
+    phoneInput.addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '').slice(0, 10);
+    });
+  }
+
+  function validateForm() {
+    clearErrors();
+    var ok = true;
+    var name = nameInput.value.trim();
+    var phone = phoneInput.value.trim();
+    var email = emailInput.value.trim();
+
+    if (name.length < 2) {
+      showError('field-name');
+      ok = false;
+    }
+    if (!/^3\d{9}$/.test(phone)) {
+      showError('field-phone');
+      ok = false;
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError('field-email');
+      ok = false;
+    }
+    return ok;
+  }
+
+  if (modalSubmit) {
+    modalSubmit.addEventListener('click', function() {
+      if (!validateForm()) return;
+
+      var contact = {
+        name: nameInput.value.trim(),
+        phone: phoneInput.value.trim(),
+        email: emailInput.value.trim()
+      };
+      var data = collectFormData();
+      var message = buildWhatsAppMessage(data, contact);
+      var waUrl = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(message);
+
+      // Guardar en feed local
+      var item = {
+        id: 'm_' + Date.now(),
+        summary: buildSummary(data),
+        tags: buildTags(data),
+        timestamp: Date.now(),
+        contact: contact
+      };
+      addPublished(item);
+      renderUserMandates();
+
+      // Mostrar banner de éxito
+      showSuccessBanner(contact.name);
+
+      // Cerrar modal y abrir WhatsApp
+      closeModal();
+      window.open(waUrl, '_blank');
+
+      // Scroll al feed
+      setTimeout(function() {
+        var anchor = document.getElementById('mandatos');
+        if (anchor) anchor.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }, 300);
+    });
+  }
+
+  // ===== Banner de éxito =====
+  function showSuccessBanner(name) {
+    var existing = document.querySelector('.success-banner');
+    if (existing) existing.remove();
+
+    var anchor = document.getElementById('success-anchor');
+    if (!anchor) return;
+
+    var banner = document.createElement('div');
+    banner.className = 'success-banner';
+    banner.innerHTML =
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<polyline points="20 6 9 17 4 12"/></svg>' +
+      '<span>¡Listo, ' + escapeHtml(name.split(' ')[0]) + '! Tu mandato quedó publicado y abrimos WhatsApp para que termines la conexión con nuestro equipo. En las próximas 48 horas recibirás ofertas.</span>';
+    anchor.appendChild(banner);
+
+    setTimeout(function() {
+      banner.style.transition = 'opacity 0.6s';
+      banner.style.opacity = '0';
+      setTimeout(function() { banner.remove(); }, 700);
+    }, 8000);
+  }
+
+  // ===== FAB de WhatsApp =====
+  var waFab = document.getElementById('wa-fab');
+  if (waFab) {
+    waFab.addEventListener('click', function(e) {
+      e.preventDefault();
+      var msg = 'Hola Mandato, quisiera más información sobre la plataforma.';
+      window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
+    });
+  }
+
+  // ===== Inicialización =====
+  renderUserMandates();
 })();
 </script>
 
