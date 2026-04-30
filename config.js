@@ -26,7 +26,7 @@ window.MANDATO_CONFIG = {
 
   // ===== URLs =====
   // URL base de tu sitio (sin / al final)
-  SITE_URL: 'https://tu-dominio.com',
+  SITE_URL: 'https://satoshigod.github.io/mandato',
 };
 
 /* ============================================================
