@@ -254,8 +254,10 @@
       showApp();
     })
     .catch(function(err) {
-      console.error(err);
-      showToast('Error de conexión: ' + err.message);
+      console.error('Error verificando admin:', err);
+      showToast('Error de conexión. Redirigiendo al login...');
+      AUTH.signOut();
+      setTimeout(redirectToLogin, 1500);
     });
 
   document.getElementById('logout-btn').addEventListener('click', function() {
