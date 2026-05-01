@@ -64,9 +64,19 @@ window.MANDATO_AUTH = (function() {
 
   return {
     signUp: function(email, password) {
+      var self = this;
       return authRequest('signup', { email: email, password: password }).then(function(data) {
-        if (data.access_token) setSession(data);
-        return data;
+        // Si el signup devolvió token directamente, guardamos sesión y listo
+        if (data.access_token) {
+          setSession(data);
+          return data;
+        }
+        // Si no devolvió token (puede pasar por timing o config),
+        // hacemos signIn inmediato para obtenerlo
+        return authRequest('token?grant_type=password', { email: email, password: password }).then(function(loginData) {
+          setSession(loginData);
+          return loginData;
+        });
       });
     },
     signIn: function(email, password) {
