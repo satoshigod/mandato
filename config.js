@@ -1,48 +1,143 @@
 /* ============================================================
-   MANDATO · Config compartido
-   Incluir este archivo como <script src="config.js"></script>
-   ANTES de cualquier otro script en cada página HTML.
+   MANDATO · Config compartido v2 (con Supabase Auth)
+   Incluir como <script src="config.js"></script>
    ============================================================ */
 
 window.MANDATO_CONFIG = {
-  // ===== Supabase =====
-  // Reemplaza con tus valores reales del dashboard de Supabase
   SUPABASE_URL: 'https://lrmlxhryfqyeutwfytwc.supabase.co',
-  SUPABASE_ANON_KEY: 'sb_publishable_0b1l_QaqYe876FAAGPXKQA_Qt2ct5Zj',
+  SUPABASE_ANON_KEY: 'PEGA_AQUI_TU_PUBLISHABLE_KEY',
 
-  // ===== Wompi =====
-  // Obtén tus llaves en https://comercios.wompi.co/
-  // Para pruebas usa las llaves "test", para producción las "prod"
   WOMPI_PUBLIC_KEY: 'pub_test_PEGA_AQUI_TU_LLAVE_PUBLICA',
-  WOMPI_INTEGRITY_SECRET: '', // No la pongas aquí, calcula la firma server-side
+  WOMPI_INTEGRITY_SECRET: '',
 
-  // ===== Contacto y branding =====
   WHATSAPP_NUMBER: '573005485019',
   EMPRESA_NOMBRE: 'Mandato',
   CIUDAD_DEFAULT: 'Medellín',
 
-  // ===== Admin =====
-  ADMIN_PASSWORD: 'Ivanko1232',
-
-  // ===== URLs =====
-  // URL base de tu sitio (sin / al final)
   SITE_URL: 'https://satoshigod.github.io/mandato',
 };
 
 /* ============================================================
-   Cliente de Supabase (REST API directo, sin librería)
+   AUTH: cliente de Supabase Auth (REST directo)
+   ============================================================ */
+window.MANDATO_AUTH = (function() {
+  var url = window.MANDATO_CONFIG.SUPABASE_URL;
+  var key = window.MANDATO_CONFIG.SUPABASE_ANON_KEY;
+  var SESSION_KEY = 'mandato_auth_session_v1';
+
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
+    catch(e) { return null; }
+  }
+  function setSession(session) {
+    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    else localStorage.removeItem(SESSION_KEY);
+  }
+  function getAccessToken() {
+    var s = getSession();
+    return s ? s.access_token : null;
+  }
+  function getUser() {
+    var s = getSession();
+    return s ? s.user : null;
+  }
+
+  function authHeaders(useUserToken) {
+    var h = { 'apikey': key, 'Content-Type': 'application/json' };
+    var token = useUserToken ? getAccessToken() : null;
+    h['Authorization'] = 'Bearer ' + (token || key);
+    return h;
+  }
+
+  function authRequest(path, body, method) {
+    return fetch(url + '/auth/v1/' + path, {
+      method: method || 'POST',
+      headers: authHeaders(false),
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r) {
+      return r.json().then(function(data) {
+        if (!r.ok) throw new Error(data.msg || data.error_description || data.error || ('Error ' + r.status));
+        return data;
+      });
+    });
+  }
+
+  return {
+    signUp: function(email, password) {
+      return authRequest('signup', { email: email, password: password }).then(function(data) {
+        if (data.access_token) setSession(data);
+        return data;
+      });
+    },
+    signIn: function(email, password) {
+      return authRequest('token?grant_type=password', { email: email, password: password }).then(function(data) {
+        setSession(data);
+        return data;
+      });
+    },
+    signOut: function() {
+      var token = getAccessToken();
+      setSession(null);
+      if (!token) return Promise.resolve();
+      return fetch(url + '/auth/v1/logout', {
+        method: 'POST',
+        headers: { 'apikey': key, 'Authorization': 'Bearer ' + token }
+      }).catch(function(){});
+    },
+    resetPassword: function(email) {
+      var redirect = window.MANDATO_CONFIG.SITE_URL + '/recuperar.html';
+      return authRequest('recover', { email: email, gotrue_meta_security: {}, redirect_to: redirect });
+    },
+    updatePassword: function(newPassword) {
+      var token = getAccessToken();
+      if (!token) return Promise.reject(new Error('No hay sesión'));
+      return fetch(url + '/auth/v1/user', {
+        method: 'PUT',
+        headers: { 'apikey': key, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword })
+      }).then(function(r) {
+        return r.json().then(function(d) {
+          if (!r.ok) throw new Error(d.msg || d.error_description || 'Error actualizando password');
+          return d;
+        });
+      });
+    },
+    getSession: getSession,
+    getUser: getUser,
+    isAuthenticated: function() { return !!getAccessToken(); },
+    // Process the recovery hash from URL (Supabase puts tokens in #access_token=... after recovery email)
+    consumeRecoveryHash: function() {
+      if (!window.location.hash) return null;
+      var params = new URLSearchParams(window.location.hash.substring(1));
+      var access = params.get('access_token');
+      if (!access) return null;
+      var session = {
+        access_token: access,
+        refresh_token: params.get('refresh_token'),
+        token_type: params.get('token_type') || 'bearer',
+        expires_in: parseInt(params.get('expires_in') || '3600'),
+        user: null
+      };
+      setSession(session);
+      // Limpiar el hash de la URL
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      return session;
+    }
+  };
+})();
+
+/* ============================================================
+   DB: cliente de Supabase REST (con auth automática)
    ============================================================ */
 window.MANDATO_DB = (function() {
   var url = window.MANDATO_CONFIG.SUPABASE_URL;
   var key = window.MANDATO_CONFIG.SUPABASE_ANON_KEY;
 
   function headers() {
-    return {
-      'apikey': key,
-      'Authorization': 'Bearer ' + key,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    };
+    var h = { 'apikey': key, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+    var token = window.MANDATO_AUTH.getAccessToken();
+    h['Authorization'] = 'Bearer ' + (token || key);
+    return h;
   }
 
   function request(method, path, body) {
@@ -63,27 +158,17 @@ window.MANDATO_DB = (function() {
   }
 
   return {
-    select: function(table, filter) {
-      return request('GET', table + (filter ? '?' + filter : ''));
-    },
-    insert: function(table, row) {
-      return request('POST', table, row);
-    },
-    update: function(table, id, changes) {
-      return request('PATCH', table + '?id=eq.' + encodeURIComponent(id), changes);
-    },
-    delete: function(table, id) {
-      return request('DELETE', table + '?id=eq.' + encodeURIComponent(id));
-    },
+    select: function(table, filter) { return request('GET', table + (filter ? '?' + filter : '')); },
+    insert: function(table, row) { return request('POST', table, row); },
+    update: function(table, id, changes) { return request('PATCH', table + '?id=eq.' + encodeURIComponent(id), changes); },
+    delete: function(table, id) { return request('DELETE', table + '?id=eq.' + encodeURIComponent(id)); },
     raw: request,
-    isConfigured: function() {
-      return key && key !== 'PEGA_AQUI_TU_ANON_KEY';
-    }
+    isConfigured: function() { return key && key.indexOf('PEGA_AQUI') === -1; }
   };
 })();
 
 /* ============================================================
-   Helpers globales
+   HELPERS globales
    ============================================================ */
 window.MANDATO_HELPERS = {
   formatCOP: function(n) {
@@ -114,13 +199,8 @@ window.MANDATO_HELPERS = {
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   },
-  uid: function(prefix) {
-    return (prefix || 'id') + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-  },
-  getURLParam: function(name) {
-    var params = new URLSearchParams(window.location.search);
-    return params.get(name);
-  },
+  uid: function(prefix) { return (prefix || 'id') + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); },
+  getURLParam: function(name) { return new URLSearchParams(window.location.search).get(name); },
   showToast: function(msg, type) {
     var existing = document.querySelector('.mandato-toast');
     if (existing) existing.remove();
@@ -134,28 +214,20 @@ window.MANDATO_HELPERS = {
 };
 
 /* ============================================================
-   Wompi Widget integration
+   WOMPI integration (igual que antes)
    ============================================================ */
 window.MANDATO_WOMPI = {
-  // Crea un widget de pago Wompi y lo inyecta en un container
-  // Documentación: https://docs.wompi.co/docs/colombia/widget-checkout-web
   open: function(opts) {
-    // opts = { amount: 79000, reference: 'sub_xxx', email: '...', onSuccess: fn, onError: fn }
     var config = window.MANDATO_CONFIG;
     if (!config.WOMPI_PUBLIC_KEY || config.WOMPI_PUBLIC_KEY.indexOf('PEGA_AQUI') !== -1) {
-      // Modo simulado si no hay key configurada
       return this._simulatePayment(opts);
     }
-
-    // Cargar script de Wompi si no está
     if (!window.WidgetCheckout) {
       var s = document.createElement('script');
       s.src = 'https://checkout.wompi.co/widget.js';
       s.onload = function() { window.MANDATO_WOMPI._launch(opts); };
       document.head.appendChild(s);
-    } else {
-      this._launch(opts);
-    }
+    } else { this._launch(opts); }
   },
   _launch: function(opts) {
     var config = window.MANDATO_CONFIG;
@@ -165,42 +237,19 @@ window.MANDATO_WOMPI = {
       reference: opts.reference,
       publicKey: config.WOMPI_PUBLIC_KEY,
       redirectUrl: opts.redirectUrl || (config.SITE_URL + '/pago-resultado.html'),
-      customerData: {
-        email: opts.email,
-        fullName: opts.name,
-        phoneNumber: opts.phone,
-        phoneNumberPrefix: '+57'
-      }
+      customerData: { email: opts.email, fullName: opts.name, phoneNumber: opts.phone, phoneNumberPrefix: '+57' }
     });
     checkout.open(function(result) {
-      var transaction = result.transaction;
-      if (transaction && transaction.status === 'APPROVED') {
-        if (opts.onSuccess) opts.onSuccess(transaction);
-      } else {
-        if (opts.onError) opts.onError(transaction);
-      }
+      var t = result.transaction;
+      if (t && t.status === 'APPROVED') { if (opts.onSuccess) opts.onSuccess(t); }
+      else { if (opts.onError) opts.onError(t); }
     });
   },
   _simulatePayment: function(opts) {
-    // Simulación local cuando Wompi no está configurado
-    var ok = confirm(
-      'MODO SIMULACIÓN (Wompi no configurado)\n\n' +
-      'Pago de ' + window.MANDATO_HELPERS.formatCOP(opts.amount) + '\n' +
-      'Referencia: ' + opts.reference + '\n\n' +
-      '¿Simular pago aprobado?'
-    );
+    var ok = confirm('MODO SIMULACIÓN\n\nPago de ' + window.MANDATO_HELPERS.formatCOP(opts.amount) + '\nReferencia: ' + opts.reference + '\n\n¿Simular pago aprobado?');
     setTimeout(function() {
-      if (ok) {
-        if (opts.onSuccess) opts.onSuccess({
-          id: 'sim_' + Date.now(),
-          status: 'APPROVED',
-          reference: opts.reference,
-          amountInCents: opts.amount * 100,
-          paymentMethodType: 'SIMULATED'
-        });
-      } else {
-        if (opts.onError) opts.onError({ status: 'DECLINED', reason: 'Cancelado por usuario' });
-      }
+      if (ok && opts.onSuccess) opts.onSuccess({ id: 'sim_' + Date.now(), status: 'APPROVED', reference: opts.reference, amountInCents: opts.amount * 100, paymentMethodType: 'SIMULATED' });
+      else if (opts.onError) opts.onError({ status: 'DECLINED', reason: 'Cancelado' });
     }, 300);
   }
 };

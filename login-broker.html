@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0F6E56">
+<title>Iniciar sesión broker — Mandato</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .auth-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 32px 28px; max-width: 400px; width: 100%; box-shadow: var(--shadow-md); }
+  .auth-card h1 { font-size: 22px; margin: 0 0 6px; font-weight: 600; letter-spacing: -0.015em; }
+  .auth-card p.lead { font-size: 14px; color: var(--text-muted); margin: 0 0 22px; }
+  .auth-foot { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 18px; padding-top: 18px; border-top: 0.5px solid var(--border); line-height: 1.6; }
+  .auth-foot a { color: var(--brand); text-decoration: none; font-weight: 500; }
+  .forgot-link { font-size: 12px; color: var(--brand); text-decoration: none; }
+  .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .label-row label { margin-bottom: 0 !important; }
+  .topbar-tag { font-size: 10px; padding: 2px 8px; background: var(--brand-light); color: var(--brand-text); border-radius: 999px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-left: 6px; }
+</style>
+</head>
+<body>
+
+<div class="auth-screen">
+  <div class="auth-card">
+    <div style="margin-bottom:18px; display:flex; align-items:center;">
+      <a href="index.html" class="brand" style="display:inline-flex;">
+        <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-7h6v7"/></svg>
+        <span class="brand-name">Mandato</span>
+      </a>
+      <span class="topbar-tag">brokers</span>
+    </div>
+    <h1>Iniciar sesión</h1>
+    <p class="lead">Accede al feed de mandatos según tu plan.</p>
+
+    <div class="form-field" id="field-email">
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="email" placeholder="tu@ejemplo.com">
+      <div class="form-error">Ingresa un email válido.</div>
+    </div>
+
+    <div class="form-field" id="field-password">
+      <div class="label-row">
+        <label for="password">Contraseña</label>
+        <a href="recuperar.html" class="forgot-link">¿Olvidaste tu contraseña?</a>
+      </div>
+      <input type="password" id="password" autocomplete="current-password">
+      <div class="form-error">Contraseña requerida.</div>
+    </div>
+
+    <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-login">Iniciar sesión</button>
+
+    <div class="auth-foot">
+      ¿Aún no eres broker afiliado?<br>
+      <a href="pricing.html?tab=broker">Ver planes</a><br>
+      <a href="login-comprador.html" style="color:var(--text-muted); font-size:12px;">¿Eres inversionista? Entra aquí</a>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function() {
+  var H = window.MANDATO_HELPERS;
+  var AUTH = window.MANDATO_AUTH;
+  var DB = window.MANDATO_DB;
+
+  if (AUTH.isAuthenticated()) {
+    window.location.href = 'brokers.html';
+    return;
+  }
+
+  function clearErrors() { document.querySelectorAll('.form-field').forEach(function(f){f.classList.remove('has-error');}); }
+  function validate() {
+    clearErrors();
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+    var ok = true;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('field-email').classList.add('has-error'); ok = false; }
+    if (password.length < 6) { document.getElementById('field-password').classList.add('has-error'); ok = false; }
+    return ok;
+  }
+
+  function doLogin() {
+    if (!validate()) return;
+    var btn = document.getElementById('btn-login');
+    btn.disabled = true; btn.textContent = 'Ingresando...';
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+
+    AUTH.signIn(email, password)
+      .then(function(data) {
+        return DB.select('brokers', 'auth_user_id=eq.' + data.user.id);
+      })
+      .then(function(rows) {
+        if (!rows || rows.length === 0) {
+          AUTH.signOut();
+          throw new Error('No encontramos cuenta de broker con ese email.');
+        }
+        H.showToast('¡Bienvenido!');
+        setTimeout(function() { window.location.href = 'brokers.html'; }, 400);
+      })
+      .catch(function(err) {
+        var msg = err.message || 'Error al iniciar sesión';
+        if (msg.indexOf('Invalid login') !== -1 || msg.indexOf('credentials') !== -1) msg = 'Email o contraseña incorrectos';
+        H.showToast(msg);
+        btn.disabled = false; btn.textContent = 'Iniciar sesión';
+      });
+  }
+
+  document.getElementById('btn-login').addEventListener('click', doLogin);
+  document.getElementById('password').addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('email').addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('password').focus(); });
+  document.getElementById('email').focus();
+})();
+</script>
+
+</body>
+</html>

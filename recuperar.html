@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0F6E56">
+<title>Recuperar contraseña — Mandato</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .auth-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 32px 28px; max-width: 400px; width: 100%; box-shadow: var(--shadow-md); }
+  .auth-card h1 { font-size: 22px; margin: 0 0 6px; font-weight: 600; letter-spacing: -0.015em; }
+  .auth-card p.lead { font-size: 14px; color: var(--text-muted); margin: 0 0 22px; line-height: 1.55; }
+  .auth-foot { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 18px; padding-top: 18px; border-top: 0.5px solid var(--border); }
+  .auth-foot a { color: var(--brand); text-decoration: none; font-weight: 500; }
+  .step { display: none; }
+  .step.active { display: block; }
+  .success-msg { background: var(--brand-light); border: 0.5px solid var(--brand); border-radius: var(--radius-md); padding: 14px 16px; font-size: 13px; color: var(--brand-text); line-height: 1.55; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="auth-screen">
+  <div class="auth-card">
+    <a href="index.html" class="brand" style="margin-bottom:18px; display:inline-flex;">
+      <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-7h6v7"/></svg>
+      <span class="brand-name">Mandato</span>
+    </a>
+
+    <!-- Paso 1: pedir email -->
+    <div class="step active" id="step-request">
+      <h1>Recuperar contraseña</h1>
+      <p class="lead">Ingresa tu email y te enviaremos un link para restablecer tu contraseña.</p>
+
+      <div class="form-field" id="field-email">
+        <label for="email">Email</label>
+        <input type="email" id="email" autocomplete="email" placeholder="tu@ejemplo.com">
+        <div class="form-error">Email inválido.</div>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-send">Enviar link</button>
+
+      <div class="auth-foot">
+        <a href="login-comprador.html">← Volver a iniciar sesión</a>
+      </div>
+    </div>
+
+    <!-- Paso 2: éxito de envío -->
+    <div class="step" id="step-sent">
+      <h1>Revisa tu email</h1>
+      <div class="success-msg">
+        Te enviamos un email a <strong id="sent-to"></strong> con el link para restablecer tu contraseña. Si no lo ves en unos minutos, revisa la carpeta de spam.
+      </div>
+      <a href="login-comprador.html" class="btn btn-block">Volver a iniciar sesión</a>
+    </div>
+
+    <!-- Paso 3: nueva password (cuando llega del email) -->
+    <div class="step" id="step-reset">
+      <h1>Nueva contraseña</h1>
+      <p class="lead">Ingresa tu nueva contraseña. Mínimo 6 caracteres.</p>
+
+      <div class="form-field" id="field-newpass">
+        <label for="newpass">Nueva contraseña</label>
+        <input type="password" id="newpass" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+        <div class="form-error">Mínimo 6 caracteres.</div>
+      </div>
+
+      <div class="form-field" id="field-newpass2">
+        <label for="newpass2">Confirmar contraseña</label>
+        <input type="password" id="newpass2" autocomplete="new-password">
+        <div class="form-error">Las contraseñas no coinciden.</div>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-update">Actualizar contraseña</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function() {
+  var H = window.MANDATO_HELPERS;
+  var AUTH = window.MANDATO_AUTH;
+
+  // Si llega desde el email con tokens en hash, mostrar step de reset
+  var recovered = AUTH.consumeRecoveryHash();
+  if (recovered) {
+    document.querySelectorAll('.step').forEach(function(s){s.classList.remove('active');});
+    document.getElementById('step-reset').classList.add('active');
+  }
+
+  function showStep(id) {
+    document.querySelectorAll('.step').forEach(function(s){s.classList.remove('active');});
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ===== Paso 1: enviar email =====
+  document.getElementById('btn-send').addEventListener('click', function() {
+    document.querySelectorAll('.form-field').forEach(function(f){f.classList.remove('has-error');});
+    var email = document.getElementById('email').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      document.getElementById('field-email').classList.add('has-error');
+      return;
+    }
+    var btn = this;
+    btn.disabled = true; btn.textContent = 'Enviando...';
+
+    AUTH.resetPassword(email)
+      .then(function() {
+        document.getElementById('sent-to').textContent = email;
+        showStep('step-sent');
+      })
+      .catch(function(err) {
+        H.showToast('Error: ' + (err.message || 'no se pudo enviar'));
+        btn.disabled = false; btn.textContent = 'Enviar link';
+      });
+  });
+
+  // ===== Paso 3: actualizar password =====
+  document.getElementById('btn-update').addEventListener('click', function() {
+    document.querySelectorAll('.form-field').forEach(function(f){f.classList.remove('has-error');});
+    var pw = document.getElementById('newpass').value;
+    var pw2 = document.getElementById('newpass2').value;
+    var ok = true;
+    if (pw.length < 6) { document.getElementById('field-newpass').classList.add('has-error'); ok = false; }
+    if (pw !== pw2) { document.getElementById('field-newpass2').classList.add('has-error'); ok = false; }
+    if (!ok) return;
+
+    var btn = this;
+    btn.disabled = true; btn.textContent = 'Actualizando...';
+
+    AUTH.updatePassword(pw)
+      .then(function() {
+        H.showToast('¡Contraseña actualizada! Inicia sesión.');
+        AUTH.signOut();
+        setTimeout(function() { window.location.href = 'login-comprador.html'; }, 1200);
+      })
+      .catch(function(err) {
+        H.showToast('Error: ' + (err.message || 'no se pudo actualizar'));
+        btn.disabled = false; btn.textContent = 'Actualizar contraseña';
+      });
+  });
+
+  document.getElementById('email').addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('btn-send').click(); });
+  document.getElementById('newpass2').addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('btn-update').click(); });
+})();
+</script>
+
+</body>
+</html>

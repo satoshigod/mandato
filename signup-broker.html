@@ -93,6 +93,11 @@
           <input type="email" id="form-email" autocomplete="email" placeholder="tu@ejemplo.com">
           <div class="form-error">Ingresa un email válido.</div>
         </div>
+        <div class="form-field" id="field-password">
+          <label for="form-password">Contraseña <span class="optional">(mínimo 6 caracteres)</span></label>
+          <input type="password" id="form-password" autocomplete="new-password" placeholder="••••••••">
+          <div class="form-error">Mínimo 6 caracteres.</div>
+        </div>
         <div class="form-field">
           <label for="form-empresa">Empresa o inmobiliaria <span class="optional">(opcional)</span></label>
           <input type="text" id="form-empresa" placeholder="Independiente / nombre de tu inmobiliaria">
@@ -285,6 +290,11 @@
       document.getElementById('field-email').classList.add('has-error');
       ok = false;
     }
+    var pw = document.getElementById('form-password').value;
+    if (pw.length < 6) {
+      document.getElementById('field-password').classList.add('has-error');
+      ok = false;
+    }
     return ok;
   }
   document.getElementById('form-phone').addEventListener('input', function() {
@@ -302,6 +312,7 @@
       name: document.getElementById('form-name').value.trim(),
       phone: document.getElementById('form-phone').value.trim(),
       email: document.getElementById('form-email').value.trim(),
+      password: document.getElementById('form-password').value,
       empresa: document.getElementById('form-empresa').value.trim(),
       ciudades: getSelectedChips('ciudades'),
       zonas: getSelectedChips('zonas'),
@@ -311,22 +322,27 @@
   }
 
   function createBroker(data, planId) {
-    var brokerId = H.uid('br');
     var venceAt = new Date(Date.now() + plan.vigencia * 24 * 3600 * 1000).toISOString();
-    return DB.insert('brokers', {
-      id: brokerId,
-      nombre: data.name,
-      telefono: data.phone,
-      email: data.email,
-      empresa: data.empresa || null,
-      ciudades: data.ciudades.length > 0 ? data.ciudades : ['Medellín'],
-      zonas_especialidad: data.zonas,
-      rangos_precio: data.rangos,
-      tipos_inmueble: data.tipos,
-      plan_id: 'broker_basico', // Empieza básico, se actualiza al pagar
-      plan_vence_at: venceAt,
-      activo: false // Se activa al confirmar pago
-    }).then(function() { return brokerId; });
+    // 1. Crear cuenta en Supabase Auth
+    return window.MANDATO_AUTH.signUp(data.email, data.password).then(function(authData) {
+      var brokerId = H.uid('br');
+      // 2. Crear registro en tabla brokers
+      return DB.insert('brokers', {
+        id: brokerId,
+        auth_user_id: authData.user.id,
+        nombre: data.name,
+        telefono: data.phone,
+        email: data.email,
+        empresa: data.empresa || null,
+        ciudades: data.ciudades.length > 0 ? data.ciudades : ['Medellín'],
+        zonas_especialidad: data.zonas,
+        rangos_precio: data.rangos,
+        tipos_inmueble: data.tipos,
+        plan_id: 'broker_basico',
+        plan_vence_at: venceAt,
+        activo: false
+      }).then(function() { return brokerId; });
+    });
   }
 
   function createSubscription(brokerId, planId, monto) {
@@ -375,15 +391,7 @@
 
   function handleSuccess(brokerId) {
     H.showToast('¡Listo! Tu cuenta de broker está activa');
-    if (DB.isConfigured()) {
-      getBrokerToken(brokerId).then(function(token) {
-        if (token) window.location.href = 'brokers.html?token=' + encodeURIComponent(token);
-        else window.location.href = 'brokers.html';
-      });
-    } else {
-      try { localStorage.setItem('mandato_demo_broker', JSON.stringify({ id: brokerId, ...getFormData(), planId: plan.id })); } catch(e){}
-      setTimeout(function() { window.location.href = 'brokers.html?demo=1'; }, 600);
-    }
+    setTimeout(function() { window.location.href = 'brokers.html'; }, 600);
   }
 
   document.getElementById('btn-pay').addEventListener('click', function() {
@@ -428,7 +436,12 @@
       })
       .catch(function(err) {
         console.error(err);
-        H.showToast('Error: ' + err.message);
+        var msg = err.message || 'Error desconocido';
+        if (msg.indexOf('already registered') !== -1 || msg.indexOf('already exists') !== -1) {
+          msg = 'Este email ya tiene una cuenta. Inicia sesión.';
+          setTimeout(function() { window.location.href = 'login-broker.html'; }, 1500);
+        }
+        H.showToast(msg);
         btn.disabled = false;
       });
   });

@@ -49,19 +49,12 @@
 </head>
 <body>
 
-<!-- Login screen -->
+<!-- Loading screen mientras verificamos auth -->
 <div class="login-screen" id="login-screen">
   <div class="login-card">
     <div class="brand" style="margin-bottom:18px"><svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-7h6v7"/></svg><span class="brand-name">Mandato</span></div>
-    <h1>Inicia sesión</h1>
-    <p>Ingresa el WhatsApp con el que te registraste. Te enviamos un link mágico.</p>
-    <div class="form-field" id="field-login-phone">
-      <label for="login-phone">WhatsApp</label>
-      <div class="phone-input"><span class="phone-prefix">+57</span><input type="tel" id="login-phone" inputmode="numeric" maxlength="10" placeholder="3001234567"></div>
-      <div class="form-error">Ingresa un celular válido.</div>
-    </div>
-    <button type="button" class="btn btn-primary btn-block" id="login-btn">Buscar mi cuenta</button>
-    <p style="font-size:12px; color:var(--text-faint); text-align:center; margin-top:14px;">¿No tienes cuenta? <a href="signup-comprador.html" style="color:var(--brand)">Crear cuenta</a></p>
+    <h1>Verificando sesión...</h1>
+    <p>Si no estás logueado serás redirigido al login.</p>
   </div>
 </div>
 
@@ -186,7 +179,7 @@
 (function() {
   var H = window.MANDATO_HELPERS;
   var DB = window.MANDATO_DB;
-  var SESSION_KEY = 'mandato_user_session_v1';
+  var AUTH = window.MANDATO_AUTH;
 
   var PLANS = {
     comprador_free: { nombre: 'Free', precio: 0, max: 1 },
@@ -195,21 +188,6 @@
 
   var currentUser = null;
 
-  // ===== Auth =====
-  function getSession() {
-    try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch(e) { return null; }
-  }
-  function setSession(user) {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
-  }
-  function clearSession() {
-    sessionStorage.removeItem(SESSION_KEY);
-  }
-
-  function showLogin() {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').classList.remove('active');
-  }
   function showApp() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').classList.add('active');
@@ -217,84 +195,43 @@
     loadMandates();
   }
 
-  // Login: buscar por token (si llega por URL) o por teléfono
-  var token = H.getURLParam('token');
-  var demo = H.getURLParam('demo');
+  function redirectToLogin() {
+    window.location.href = 'login-comprador.html';
+  }
 
-  function loginByToken(t) {
-    if (!DB.isConfigured()) {
-      // Modo demo
-      var stored = localStorage.getItem('mandato_demo_user');
-      if (stored) {
-        currentUser = JSON.parse(stored);
-        setSession(currentUser);
-        showApp();
+  // ===== Verificar sesión =====
+  if (!AUTH.isAuthenticated()) {
+    redirectToLogin();
+    return;
+  }
+
+  var authUser = AUTH.getUser();
+  if (!authUser) {
+    AUTH.signOut();
+    redirectToLogin();
+    return;
+  }
+
+  // Buscar el registro de usuario en la tabla 'usuarios' usando auth_user_id
+  DB.select('usuarios', 'auth_user_id=eq.' + authUser.id)
+    .then(function(rows) {
+      if (!rows || rows.length === 0) {
+        H.showToast('No encontramos tu perfil de comprador.');
+        AUTH.signOut();
+        setTimeout(redirectToLogin, 1200);
         return;
       }
-      showLogin();
-      return;
-    }
-    DB.select('usuarios', 'client_token=eq.' + encodeURIComponent(t)).then(function(rows) {
-      if (rows && rows[0]) {
-        currentUser = rows[0];
-        setSession(currentUser);
-        showApp();
-      } else {
-        H.showToast('Link inválido. Inicia sesión.');
-        showLogin();
-      }
-    }).catch(function() { showLogin(); });
-  }
-
-  function loginByPhone(phone) {
-    if (!DB.isConfigured()) {
-      var stored = localStorage.getItem('mandato_demo_user');
-      if (stored) {
-        var u = JSON.parse(stored);
-        if (u.phone === phone || u.telefono === phone) {
-          currentUser = u; setSession(u); showApp(); return;
-        }
-      }
-      H.showToast('No encontramos esa cuenta');
-      return;
-    }
-    DB.select('usuarios', 'telefono=eq.' + encodeURIComponent(phone)).then(function(rows) {
-      if (rows && rows[0]) {
-        currentUser = rows[0];
-        setSession(currentUser);
-        showApp();
-      } else {
-        H.showToast('No encontramos esa cuenta. ¿Quieres crearla?');
-        setTimeout(function() { window.location.href = 'signup-comprador.html'; }, 1500);
-      }
-    }).catch(function(e) { console.error(e); H.showToast('Error: ' + e.message); });
-  }
-
-  if (token) {
-    loginByToken(token);
-  } else if (demo) {
-    var d = localStorage.getItem('mandato_demo_user');
-    if (d) { currentUser = JSON.parse(d); setSession(currentUser); showApp(); } else showLogin();
-  } else {
-    var s = getSession();
-    if (s) { currentUser = s; showApp(); } else showLogin();
-  }
-
-  document.getElementById('login-btn').addEventListener('click', function() {
-    var phone = document.getElementById('login-phone').value.trim();
-    if (!/^3\d{9}$/.test(phone)) {
-      document.getElementById('field-login-phone').classList.add('has-error');
-      return;
-    }
-    loginByPhone(phone);
-  });
-  document.getElementById('login-phone').addEventListener('input', function() {
-    this.value = this.value.replace(/\D/g, '').slice(0, 10);
-  });
+      currentUser = rows[0];
+      showApp();
+    })
+    .catch(function(err) {
+      console.error(err);
+      H.showToast('Error de conexión: ' + err.message);
+    });
 
   document.getElementById('logout-btn').addEventListener('click', function() {
-    clearSession();
-    window.location.reload();
+    AUTH.signOut();
+    setTimeout(redirectToLogin, 200);
   });
 
   // ===== Render user state =====

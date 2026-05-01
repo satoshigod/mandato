@@ -89,6 +89,11 @@
           <input type="email" id="form-email" autocomplete="email" placeholder="tu@ejemplo.com">
           <div class="form-error">Ingresa un email válido.</div>
         </div>
+        <div class="form-field" id="field-password">
+          <label for="form-password">Contraseña <span class="optional">(mínimo 6 caracteres)</span></label>
+          <input type="password" id="form-password" autocomplete="new-password" placeholder="••••••••">
+          <div class="form-error">Mínimo 6 caracteres.</div>
+        </div>
         <div class="form-field">
           <label for="form-city">Ciudad de interés</label>
           <select id="form-city">
@@ -295,6 +300,11 @@
       document.getElementById('field-email').classList.add('has-error');
       ok = false;
     }
+    var pw = document.getElementById('form-password').value;
+    if (pw.length < 6) {
+      document.getElementById('field-password').classList.add('has-error');
+      ok = false;
+    }
     return ok;
   }
 
@@ -309,21 +319,28 @@
       name: document.getElementById('form-name').value.trim(),
       phone: document.getElementById('form-phone').value.trim(),
       email: document.getElementById('form-email').value.trim(),
+      password: document.getElementById('form-password').value,
       city: document.getElementById('form-city').value
     };
   }
 
   function createUser(data, planId, planVenceAt) {
-    var userId = H.uid('u');
-    return DB.insert('usuarios', {
-      id: userId,
-      nombre: data.name,
-      telefono: data.phone,
-      email: data.email,
-      ciudad: data.city,
-      plan_id: planId,
-      plan_vence_at: planVenceAt
-    }).then(function() { return userId; });
+    // 1. Crear cuenta en Supabase Auth (esto retorna access_token y user)
+    return window.MANDATO_AUTH.signUp(data.email, data.password).then(function(authData) {
+      var authUserId = authData.user.id;
+      var userId = H.uid('u');
+      // 2. Crear registro en tabla usuarios
+      return DB.insert('usuarios', {
+        id: userId,
+        auth_user_id: authUserId,
+        nombre: data.name,
+        telefono: data.phone,
+        email: data.email,
+        ciudad: data.city,
+        plan_id: planId,
+        plan_vence_at: planVenceAt
+      }).then(function() { return userId; });
+    });
   }
 
   function createSubscription(userId, planId, monto) {
@@ -373,16 +390,8 @@
 
   function handleSuccess(userId) {
     H.showToast('¡Listo! Tu cuenta está activa');
-    if (DB.isConfigured()) {
-      getUserToken(userId).then(function(token) {
-        if (token) redirectToAccount(token);
-        else window.location.href = 'mi-cuenta.html';
-      });
-    } else {
-      // Modo demo sin Supabase
-      try { localStorage.setItem('mandato_demo_user', JSON.stringify({ id: userId, ...getFormData(), planId: plan.id })); } catch(e) {}
-      setTimeout(function() { window.location.href = 'mi-cuenta.html?demo=1'; }, 600);
-    }
+    // La sesión ya está guardada por AUTH.signUp, solo redirigimos
+    setTimeout(function() { window.location.href = 'mi-cuenta.html'; }, 600);
   }
 
   // ===== Activar gratis =====
@@ -407,7 +416,12 @@
       .then(function(userId) { handleSuccess(userId); })
       .catch(function(err) {
         console.error(err);
-        H.showToast('Error: ' + err.message);
+        var msg = err.message || 'Error desconocido';
+        if (msg.indexOf('already registered') !== -1 || msg.indexOf('already exists') !== -1) {
+          msg = 'Este email ya tiene una cuenta. Inicia sesión.';
+          setTimeout(function() { window.location.href = 'login-comprador.html'; }, 1500);
+        }
+        H.showToast(msg);
         btn.disabled = false;
         btn.textContent = 'Activar cuenta gratis';
       });

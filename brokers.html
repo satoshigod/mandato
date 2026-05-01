@@ -46,19 +46,12 @@
 </head>
 <body>
 
-<!-- Login -->
+<!-- Loading -->
 <div class="login-screen" id="login-screen">
   <div class="login-card">
     <div class="brand" style="margin-bottom:18px"><svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-7h6v7"/></svg><span class="brand-name">Mandato</span></div>
-    <h1>Acceso brokers</h1>
-    <p>Ingresa el WhatsApp con el que te registraste.</p>
-    <div class="form-field" id="field-login-phone">
-      <label for="login-phone">WhatsApp</label>
-      <div class="phone-input"><span class="phone-prefix">+57</span><input type="tel" id="login-phone" inputmode="numeric" maxlength="10" placeholder="3001234567"></div>
-      <div class="form-error">Ingresa un celular válido.</div>
-    </div>
-    <button type="button" class="btn btn-primary btn-block" id="login-btn">Entrar</button>
-    <p style="font-size:12px; color:var(--text-faint); text-align:center; margin-top:14px;">¿Aún no eres broker afiliado? <a href="pricing.html?tab=broker" style="color:var(--brand)">Ver planes</a></p>
+    <h1>Verificando sesión...</h1>
+    <p>Si no estás logueado serás redirigido al login.</p>
   </div>
 </div>
 
@@ -128,7 +121,7 @@
 (function() {
   var H = window.MANDATO_HELPERS;
   var DB = window.MANDATO_DB;
-  var SESSION_KEY = 'mandato_broker_session_v1';
+  var AUTH = window.MANDATO_AUTH;
 
   var PLANS = {
     broker_basico: { nombre: 'Básico', precio: 149000, max_views: 10, contacto_directo: false, prioridad: 1 },
@@ -140,59 +133,49 @@
   var currentFilter = 'all';
   var currentMandates = [];
 
-  function showLogin() { document.getElementById('login-screen').style.display = 'flex'; document.getElementById('app').classList.remove('active'); }
-  function showApp() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app').classList.add('active'); renderBroker(); loadFeed(); }
-
-  function getSession() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch(e) { return null; } }
-  function setSession(b) { sessionStorage.setItem(SESSION_KEY, JSON.stringify(b)); }
-  function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
-
-  var token = H.getURLParam('token');
-  var demo = H.getURLParam('demo');
-
-  function loginByToken(t) {
-    if (!DB.isConfigured()) {
-      var stored = localStorage.getItem('mandato_demo_broker');
-      if (stored) { currentBroker = JSON.parse(stored); setSession(currentBroker); showApp(); return; }
-      showLogin(); return;
-    }
-    DB.select('brokers', 'broker_token=eq.' + encodeURIComponent(t)).then(function(rows) {
-      if (rows && rows[0]) { currentBroker = rows[0]; setSession(currentBroker); showApp(); }
-      else { H.showToast('Link inválido'); showLogin(); }
-    }).catch(function() { showLogin(); });
+  function showApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('active');
+    renderBroker();
+    loadFeed();
   }
 
-  function loginByPhone(phone) {
-    if (!DB.isConfigured()) {
-      var stored = localStorage.getItem('mandato_demo_broker');
-      if (stored) {
-        var b = JSON.parse(stored);
-        if (b.phone === phone || b.telefono === phone) { currentBroker = b; setSession(b); showApp(); return; }
+  function redirectToLogin() {
+    window.location.href = 'login-broker.html';
+  }
+
+  // ===== Verificar sesión =====
+  if (!AUTH.isAuthenticated()) {
+    redirectToLogin();
+    return;
+  }
+  var authUser = AUTH.getUser();
+  if (!authUser) {
+    AUTH.signOut();
+    redirectToLogin();
+    return;
+  }
+
+  DB.select('brokers', 'auth_user_id=eq.' + authUser.id)
+    .then(function(rows) {
+      if (!rows || rows.length === 0) {
+        H.showToast('No encontramos tu perfil de broker.');
+        AUTH.signOut();
+        setTimeout(redirectToLogin, 1200);
+        return;
       }
-      H.showToast('No encontramos esa cuenta'); return;
-    }
-    DB.select('brokers', 'telefono=eq.' + encodeURIComponent(phone)).then(function(rows) {
-      if (rows && rows[0]) { currentBroker = rows[0]; setSession(currentBroker); showApp(); }
-      else { H.showToast('No encontramos esa cuenta'); }
+      currentBroker = rows[0];
+      showApp();
+    })
+    .catch(function(err) {
+      console.error(err);
+      H.showToast('Error de conexión: ' + err.message);
     });
-  }
 
-  if (token) loginByToken(token);
-  else if (demo) {
-    var d = localStorage.getItem('mandato_demo_broker');
-    if (d) { currentBroker = JSON.parse(d); setSession(currentBroker); showApp(); } else showLogin();
-  } else {
-    var s = getSession();
-    if (s) { currentBroker = s; showApp(); } else showLogin();
-  }
-
-  document.getElementById('login-btn').addEventListener('click', function() {
-    var phone = document.getElementById('login-phone').value.trim();
-    if (!/^3\d{9}$/.test(phone)) { document.getElementById('field-login-phone').classList.add('has-error'); return; }
-    loginByPhone(phone);
+  document.getElementById('logout-btn').addEventListener('click', function() {
+    AUTH.signOut();
+    setTimeout(redirectToLogin, 200);
   });
-  document.getElementById('login-phone').addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0, 10); });
-  document.getElementById('logout-btn').addEventListener('click', function() { clearSession(); window.location.reload(); });
 
   function renderBroker() {
     var name = currentBroker.nombre || currentBroker.name || 'Broker';

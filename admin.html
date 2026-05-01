@@ -58,17 +58,12 @@
 </head>
 <body>
 
-<!-- Login -->
+<!-- Loading -->
 <div class="login-screen" id="login-screen">
   <div class="login-card">
     <div class="brand" style="margin-bottom:18px"><svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-7h6v7"/></svg><span class="brand-name">Mandato</span><span class="topbar-tag">admin</span></div>
-    <h1>Acceso administrador</h1>
-    <p>Esta área es solo para el equipo Mandato.</p>
-    <div class="form-field">
-      <label for="login-password">Contraseña</label>
-      <input type="password" id="login-password" placeholder="••••••••">
-    </div>
-    <button type="button" class="btn btn-primary btn-block" id="login-btn">Ingresar</button>
+    <h1>Verificando sesión...</h1>
+    <p>Si no eres admin serás redirigido al login.</p>
   </div>
 </div>
 
@@ -216,45 +211,56 @@
 (function() {
   var H = window.MANDATO_HELPERS;
   var DB = window.MANDATO_DB;
-  var SESSION_KEY = 'mandato_admin_session_v1';
+  var AUTH = window.MANDATO_AUTH;
 
   var allMandates = [], allUsers = [], allBrokers = [], allPagos = [], allSubs = [];
   var currentMandate = null;
   var currentMFilter = 'all';
 
   // ===== Auth =====
-  function checkAuth() {
-    return sessionStorage.getItem(SESSION_KEY) === 'authenticated';
-  }
   function showApp() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').classList.add('active');
     if (!DB.isConfigured()) {
       document.getElementById('storage-mode').textContent = 'modo: local (demo)';
-      document.getElementById('setup-banner-slot').innerHTML = '<div class="setup-banner">⚠️ <strong>Supabase no configurado.</strong> Estás en modo demo con datos de ejemplo. Edita <code>config.js</code> y pega tu URL y anon key para conectar la base de datos real.</div>';
+      document.getElementById('setup-banner-slot').innerHTML = '<div class="setup-banner">⚠️ <strong>Supabase no configurado.</strong> Estás en modo demo. Edita <code>config.js</code>.</div>';
       seedDemoData();
     } else {
       document.getElementById('storage-mode').textContent = 'modo: supabase';
     }
     refreshAll();
   }
-  function showLogin() {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').classList.remove('active');
+
+  function redirectToLogin() {
+    window.location.href = 'login-admin.html';
   }
 
-  document.getElementById('login-btn').addEventListener('click', function() {
-    var pw = document.getElementById('login-password').value;
-    if (pw === window.MANDATO_CONFIG.ADMIN_PASSWORD) {
-      sessionStorage.setItem(SESSION_KEY, 'authenticated');
+  // Verificar sesión y permisos de admin
+  if (!AUTH.isAuthenticated()) {
+    redirectToLogin();
+    return;
+  }
+  var authUser = AUTH.getUser();
+  if (!authUser) { AUTH.signOut(); redirectToLogin(); return; }
+
+  DB.select('admins', 'id=eq.' + authUser.id)
+    .then(function(rows) {
+      if (!rows || rows.length === 0) {
+        showToast('No tienes permisos de admin');
+        AUTH.signOut();
+        setTimeout(redirectToLogin, 1200);
+        return;
+      }
       showApp();
-    } else { showToast('Contraseña incorrecta'); }
-  });
-  document.getElementById('login-password').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') document.getElementById('login-btn').click();
-  });
+    })
+    .catch(function(err) {
+      console.error(err);
+      showToast('Error de conexión: ' + err.message);
+    });
+
   document.getElementById('logout-btn').addEventListener('click', function() {
-    sessionStorage.removeItem(SESSION_KEY); window.location.reload();
+    AUTH.signOut();
+    setTimeout(redirectToLogin, 200);
   });
 
   // ===== Demo data =====
@@ -610,9 +616,7 @@
     setTimeout(function(){t.classList.remove('show');}, 2500);
   }
 
-  // ===== Init =====
-  if (checkAuth()) showApp();
-  else { showLogin(); document.getElementById('login-password').focus(); }
+  // ===== Init: el flujo de auth arriba ya hace el showApp() =====
 
 })();
 </script>

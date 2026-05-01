@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0F6E56">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin login — Mandato</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .auth-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 32px 28px; max-width: 400px; width: 100%; box-shadow: var(--shadow-md); }
+  .auth-card h1 { font-size: 22px; margin: 0 0 6px; font-weight: 600; letter-spacing: -0.015em; }
+  .auth-card p.lead { font-size: 14px; color: var(--text-muted); margin: 0 0 22px; }
+  .topbar-tag { font-size: 10px; padding: 2px 8px; background: var(--brand-light); color: var(--brand-text); border-radius: 999px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-left: 6px; }
+</style>
+</head>
+<body>
+
+<div class="auth-screen">
+  <div class="auth-card">
+    <div style="margin-bottom:18px; display:flex; align-items:center;">
+      <span class="brand" style="display:inline-flex;">
+        <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-7h6v7"/></svg>
+        <span class="brand-name">Mandato</span>
+      </span>
+      <span class="topbar-tag">admin</span>
+    </div>
+    <h1>Acceso administrador</h1>
+    <p class="lead">Esta área es solo para el equipo Mandato.</p>
+
+    <div class="form-field" id="field-email">
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="email">
+      <div class="form-error">Email inválido.</div>
+    </div>
+
+    <div class="form-field" id="field-password">
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" autocomplete="current-password">
+      <div class="form-error">Contraseña requerida.</div>
+    </div>
+
+    <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-login">Ingresar</button>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function() {
+  var H = window.MANDATO_HELPERS;
+  var AUTH = window.MANDATO_AUTH;
+  var DB = window.MANDATO_DB;
+
+  // Si ya hay sesión, validar que sea admin
+  if (AUTH.isAuthenticated()) {
+    var user = AUTH.getUser();
+    if (user) {
+      DB.select('admins', 'id=eq.' + user.id).then(function(rows) {
+        if (rows && rows.length > 0) window.location.href = 'admin.html';
+        else AUTH.signOut();
+      });
+    }
+  }
+
+  function validate() {
+    document.querySelectorAll('.form-field').forEach(function(f){f.classList.remove('has-error');});
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+    var ok = true;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('field-email').classList.add('has-error'); ok = false; }
+    if (password.length < 6) { document.getElementById('field-password').classList.add('has-error'); ok = false; }
+    return ok;
+  }
+
+  function doLogin() {
+    if (!validate()) return;
+    var btn = document.getElementById('btn-login');
+    btn.disabled = true; btn.textContent = 'Verificando...';
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+
+    AUTH.signIn(email, password)
+      .then(function(data) {
+        return DB.select('admins', 'id=eq.' + data.user.id);
+      })
+      .then(function(rows) {
+        if (!rows || rows.length === 0) {
+          AUTH.signOut();
+          throw new Error('No tienes permisos de administrador.');
+        }
+        window.location.href = 'admin.html';
+      })
+      .catch(function(err) {
+        var msg = err.message || 'Error';
+        if (msg.indexOf('Invalid login') !== -1 || msg.indexOf('credentials') !== -1) msg = 'Email o contraseña incorrectos';
+        H.showToast(msg);
+        btn.disabled = false; btn.textContent = 'Ingresar';
+      });
+  }
+
+  document.getElementById('btn-login').addEventListener('click', doLogin);
+  document.getElementById('password').addEventListener('keydown', function(e){ if (e.key === 'Enter') doLogin(); });
+  document.getElementById('email').focus();
+})();
+</script>
+
+</body>
+</html>
